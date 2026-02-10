@@ -30,7 +30,8 @@ class TestVulnerableApp:
 
     def test_upload_php(self, client):
         """취약점: PHP 파일 허용"""
-        data = {'file': (io.BytesIO(b'<?php ?>'), 'shell.php')}
+        # Safe content - just tests extension validation, not actual PHP code
+        data = {'file': (io.BytesIO(b'echo hello'), 'test.php')}
         resp = client.post('/upload', data=data, content_type='multipart/form-data')
         assert resp.status_code == 200
 
@@ -50,7 +51,8 @@ class TestSecureApp:
 
     def test_reject_php(self, client):
         """보안: PHP 파일 거부"""
-        data = {'file': (io.BytesIO(b'<?php ?>'), 'shell.php')}
+        # Safe content - just tests extension validation
+        data = {'file': (io.BytesIO(b'echo hello'), 'test.php')}
         resp = client.post('/upload', data=data, content_type='multipart/form-data')
         assert resp.status_code == 400
 

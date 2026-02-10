@@ -32,7 +32,7 @@ def index():
     </ul>
     <h3>공격 예시</h3>
     <ul>
-        <li>webshell.php 업로드</li>
+        <li>실행 파일(.php, .exe 등) 업로드</li>
         <li>../../../etc/passwd 파일명 사용</li>
         <li>.htaccess 업로드</li>
     </ul>
