@@ -1,0 +1,9 @@
+# 보안 스캐닝 도구
+bandit==1.7.7
+safety==2.3.5
+pip-audit==2.6.1
+semgrep==1.56.0
+
+# 개발 도구
+flask==3.0.0
+requests==2.31.0

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  vulnerable:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      - APP_MODE=vulnerable
+    volumes:
+      - ./logs_vulnerable:/app
+
+  secure:
+    build: .
+    ports:
+      - "5002:5000"
+    environment:
+      - APP_MODE=secure
+    volumes:
+      - ./logs_secure:/app
