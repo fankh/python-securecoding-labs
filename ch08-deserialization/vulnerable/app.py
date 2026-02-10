@@ -1,6 +1,5 @@
 """
 Pickle 역직렬화 취약점 실습 - 취약한 코드
-경고: 이 코드는 교육 목적으로만 사용하세요!
 """
 from flask import Flask, request, jsonify
 import pickle
