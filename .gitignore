@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Test artifacts
+*.db
+*.log
+*.sqlite
+*.sqlite3
+
+# Uploads (created during testing)
+uploads/
+uploads_secure/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+
+# Reports
+reports/
+*.json
+!requirements*.txt
+
+# OS
+.DS_Store
+Thumbs.db
