@@ -59,3 +59,39 @@ docker-compose up --build
 4. **동일한 에러 응답**
    - 로그인 실패 시 동일한 메시지
    - 사용자 열거 공격 방지
+
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch11-error-handling
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_error_exposes_trace` | 취약: 스택 트레이스 노출 |
+| `test_error_generic` | 안전: 일반 에러 메시지 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 - 스택 트레이스 노출
+curl "http://localhost:5001/user?id=abc"
+# 결과: traceback 정보 포함
+
+# 안전한 버전 - 일반 에러 메시지
+curl "http://localhost:5002/user?id=abc"
+# 결과: error_id만 포함, 상세 정보 없음
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001/user?id=abc 접속
+2. 스택 트레이스 노출 확인 (취약점)
+3. http://localhost:5002/user?id=abc 접속
+4. 일반적인 에러 메시지 + error_id 확인 (방어)
+5. 로그 파일에서 마스킹 확인

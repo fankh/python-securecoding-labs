@@ -158,6 +158,53 @@ jobs:
    - 모든 의존성 추적
    - 취약점 발견 시 빠른 대응
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch12-supply-chain
+pytest test_tools.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_vulnerable_requirements_exist` | 취약 의존성 파일 존재 |
+| `test_secure_requirements_exist` | 안전 의존성 파일 존재 |
+| `test_scan_script_syntax` | 스캔 스크립트 문법 확인 |
+| `test_check_hashes_syntax` | 해시 검증 스크립트 문법 확인 |
+| `test_secure_uses_pinned_versions` | 버전 고정(==) 사용 확인 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up --build
+
+# 스캔 결과 확인
+docker-compose logs
+```
+
+### 3. 직접 스캔 실행
+```bash
+# 도구 설치
+pip install pip-audit safety cyclonedx-bom
+
+# 취약한 의존성 스캔
+pip-audit -r requirements_vulnerable.txt
+safety check -r requirements_vulnerable.txt
+
+# 안전한 의존성 스캔
+pip-audit -r requirements_secure.txt
+
+# SBOM 생성
+python scan_dependencies.py
+```
+
+### 4. 수동 확인
+1. `requirements_vulnerable.txt` - 버전 범위 사용 (>=)
+2. `requirements_secure.txt` - 정확한 버전 고정 (==)
+3. `pip-audit` 결과 비교
+4. 취약점 개수 차이 확인
+
 ## 참고 자료
 
 - [OWASP Dependency-Check](https://owasp.org/www-project-dependency-check/)

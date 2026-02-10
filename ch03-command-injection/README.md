@@ -61,6 +61,41 @@ os.system(f"nslookup {domain}")
 subprocess.run(["ping", "-c", "3", host], shell=False)
 ```
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch03-command-injection
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_ping_valid` | 정상 IP 입력 테스트 |
+| `test_injection_accepted` | 취약: 인젝션 허용 |
+| `test_injection_blocked` | 안전: 인젝션 차단 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 테스트 (명령어 실행됨)
+curl -X POST http://localhost:5001/ping -d "host=127.0.0.1; whoami"
+
+# 안전한 버전 테스트 (차단됨)
+curl -X POST http://localhost:5002/ping -d "host=127.0.0.1; whoami"
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001 접속
+2. Host 입력란에 `127.0.0.1; whoami` 입력
+3. 명령어 실행 결과 확인 (취약점)
+4. http://localhost:5002에서 동일 테스트
+5. 에러 또는 차단 확인 (방어 성공)
+
 ## 체크리스트
 - [ ] shell=True 사용하지 않기
 - [ ] 명령어와 인자를 리스트로 분리

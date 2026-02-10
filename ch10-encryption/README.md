@@ -53,6 +53,44 @@ kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=600
 key = kdf.derive(password.encode())
 ```
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch10-encryption
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_encrypt` | 취약: DES/ECB 암호화 |
+| `test_hash` | 해시 기능 테스트 |
+| `test_encrypt_decrypt` | 안전: AES-GCM 암복호화 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 - DES/ECB 모드
+curl -X POST http://localhost:5001/encrypt -d "plaintext=hello"
+curl -X POST http://localhost:5001/hash -d "text=password"
+
+# 안전한 버전 - AES-GCM 모드
+curl -X POST http://localhost:5002/encrypt -d "plaintext=hello"
+# 반환된 ciphertext로 복호화 테스트
+curl -X POST http://localhost:5002/decrypt -d "ciphertext=<반환값>"
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001 접속
+2. 동일 평문 2회 암호화 → 동일 암호문 (ECB 취약점)
+3. http://localhost:5002에서 동일 테스트
+4. 동일 평문 2회 암호화 → 다른 암호문 (GCM 안전)
+5. 해시 형식 비교 (MD5 vs SHA-256)
+
 ## 체크리스트
 - [ ] AES-256 사용
 - [ ] GCM 또는 CCM 모드 사용

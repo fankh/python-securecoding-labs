@@ -57,6 +57,45 @@ token = jwt.encode(payload, SECRET, algorithm="HS256")
 payload = jwt.decode(token, SECRET, algorithms=["HS256"])
 ```
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch09-authentication
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_index` | 메인 페이지 접근 |
+| `test_register` | 사용자 등록 기능 테스트 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 - MD5 해시 확인
+curl -X POST http://localhost:5001/register \
+  -d "username=testuser&password=pass123"
+
+# 안전한 버전 - bcrypt 해시 확인
+curl -X POST http://localhost:5002/register \
+  -d "username=testuser&password=pass123"
+
+# DB에서 해시 형식 비교
+docker-compose exec vulnerable cat users.db | strings | grep -E '\$2[ab]\$|[a-f0-9]{32}'
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001 접속
+2. 사용자 등록 후 DB 확인 (MD5 해시)
+3. http://localhost:5002에서 동일 테스트
+4. bcrypt 해시 형식 확인 (`$2b$...`)
+5. JWT 토큰 구조 비교
+
 ## 체크리스트
 - [ ] bcrypt 또는 Argon2 사용
 - [ ] 비밀번호 복잡도 정책 적용

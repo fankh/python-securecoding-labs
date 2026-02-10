@@ -78,6 +78,46 @@ def validate_username(username: str) -> bool:
 - [ ] 에러 메시지에서 쿼리 정보 숨기기
 - [ ] 최소 권한 DB 계정 사용
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch04-sql-injection
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_index` | 메인 페이지 접근 |
+| `test_login_valid` | 정상 로그인 테스트 |
+| `test_search` | 검색 기능 테스트 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 - Authentication Bypass
+curl -X POST http://localhost:5001/login \
+  -d "username=' OR '1'='1&password=anything"
+
+# 취약한 버전 - UNION Injection
+curl "http://localhost:5001/search?q=' UNION SELECT id, username, password FROM users--"
+
+# 안전한 버전 테스트
+curl -X POST http://localhost:5002/login \
+  -d "username=' OR '1'='1&password=anything"
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001 접속
+2. Username: `' OR '1'='1`, Password: 아무 값
+3. 로그인 성공 확인 (취약점)
+4. http://localhost:5002에서 동일 테스트
+5. 로그인 실패 확인 (방어 성공)
+
 ## 참고 자료
 - [OWASP SQL Injection](https://owasp.org/www-community/attacks/SQL_Injection)
 - [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)

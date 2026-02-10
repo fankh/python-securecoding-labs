@@ -135,6 +135,43 @@ return send_from_directory(UPLOAD_FOLDER, safe_filename)
 | 크기 제한 | ✗ | ✓ 5MB |
 | 경로 탐색 방어 | ✗ | ✓ |
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch07-file-upload
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_upload_txt` | 정상 텍스트 파일 업로드 |
+| `test_upload_php` | 취약: PHP 파일 허용 |
+| `test_reject_php` | 안전: PHP 파일 거부 (400) |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 - 위험한 확장자 허용
+echo "test content" > test.php
+curl -F "file=@test.php" http://localhost:5001/upload
+
+# 안전한 버전 - 위험한 확장자 차단
+curl -F "file=@test.php" http://localhost:5002/upload
+# 결과: "File type not allowed" 에러
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001 접속
+2. `.php` 확장자 파일 업로드 시도
+3. 업로드 성공 확인 (취약점)
+4. http://localhost:5002에서 동일 테스트
+5. 업로드 거부 확인 (방어 성공)
+
 ## 참고 자료
 
 - [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)

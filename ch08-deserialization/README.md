@@ -60,6 +60,43 @@ token = serializer.dumps(data)
 data = serializer.loads(token)  # 변조 시 예외 발생
 ```
 
+## 테스트 방법
+
+### 1. pytest 실행 (권장)
+```bash
+cd ch08-deserialization
+pytest test_app.py -v
+```
+
+**테스트 항목:**
+| 테스트 | 설명 |
+|--------|------|
+| `test_index` | 메인 페이지 접근 |
+| `test_save_session` | 세션 저장 기능 테스트 |
+
+### 2. Docker 테스트
+```bash
+docker-compose up -d
+
+# 취약한 버전 - Pickle 직렬화 사용
+curl -X POST http://localhost:5001/save_session -d "username=test"
+
+# 안전한 버전 - itsdangerous 서명 사용
+curl -X POST http://localhost:5002/save_session -d "username=test"
+
+# 로그에서 차이 확인
+docker-compose logs
+
+docker-compose down
+```
+
+### 3. 수동 테스트
+1. http://localhost:5001 접속
+2. 세션 저장 후 쿠키 값 확인 (Base64 Pickle)
+3. exploit.py로 악성 페이로드 생성
+4. http://localhost:5002에서 동일 테스트
+5. 변조된 데이터 거부 확인 (서명 검증)
+
 ## 체크리스트
 - [ ] 외부 입력에 pickle.loads() 사용하지 않기
 - [ ] JSON, MessagePack 등 안전한 포맷 사용
