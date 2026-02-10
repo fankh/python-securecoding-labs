@@ -90,7 +90,9 @@ TEMPLATE = """
 @app.after_request
 def set_cookie_options(response):
     """SameSite 쿠키 설정"""
-    response.headers['Set-Cookie'] = response.headers.get('Set-Cookie', '') + '; SameSite=Strict'
+    existing_cookie = response.headers.get('Set-Cookie', '')
+    if existing_cookie:
+        response.headers['Set-Cookie'] = existing_cookie + '; SameSite=Strict'
     return response
 
 
