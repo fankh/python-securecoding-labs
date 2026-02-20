@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  vulnerable:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      - APP_MODE=vulnerable
+
+  secure:
+    build: .
+    ports:
+      - "5002:5000"
+    environment:
+      - APP_MODE=secure
+      - JWT_SECRET=your-super-secret-key-change-in-production

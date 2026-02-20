@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # Chapter 04: SQL Injection Lab
+  sqli-lab:
+    build: ./ch04-sql-injection
+    ports:
+      - "5004:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./ch04-sql-injection:/app
+
+  # Chapter 05: XSS Lab
+  xss-lab:
+    build: ./ch05-xss
+    ports:
+      - "5005:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./ch05-xss:/app
+
+  # Chapter 06: CSRF Lab
+  csrf-lab:
+    build: ./ch06-csrf
+    ports:
+      - "5006:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./ch06-csrf:/app
+
+  # Chapter 07: File Upload Lab
+  upload-lab:
+    build: ./ch07-file-upload
+    ports:
+      - "5007:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./ch07-file-upload:/app
+
+  # Chapter 08: Deserialization Lab
+  pickle-lab:
+    build: ./ch08-deserialization
+    ports:
+      - "5008:5000"
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./ch08-deserialization:/app
+
+  # Chapter 09: Authentication Lab
+  auth-lab:
+    build: ./ch09-authentication
+    ports:
+      - "5009:5000"
+    environment:
+      - FLASK_ENV=development
+      - JWT_SECRET=change-this-in-production
+    volumes:
+      - ./ch09-authentication:/app
+
+  # Shared PostgreSQL for SQL injection labs
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: labuser
+      POSTGRES_PASSWORD: labpass
+      POSTGRES_DB: securecoding
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
