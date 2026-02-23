@@ -177,6 +177,7 @@ pytest test_app.py::TestSecureApp::test_reject_php -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch07-file-upload
 docker-compose up -d
 
 # 취약한 버전 - 위험한 확장자 허용

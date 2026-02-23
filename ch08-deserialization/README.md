@@ -99,6 +99,7 @@ pytest test_app.py::TestSecureApp -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch08-deserialization
 docker-compose up -d
 
 # 취약한 버전 - Pickle 직렬화 사용

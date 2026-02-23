@@ -101,6 +101,7 @@ pytest test_app.py::TestSecureApp -v
 
 ### 3. Docker 테스트
 ```bash
+cd ch06-csrf
 docker-compose up -d
 
 # 취약한 버전 - CSRF 공격 시뮬레이션

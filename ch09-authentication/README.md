@@ -104,6 +104,7 @@ pytest test_app.py -k "login" -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch09-authentication
 docker-compose up -d
 
 # 취약한 버전 - MD5 해시 확인

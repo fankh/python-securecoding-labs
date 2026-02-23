@@ -108,6 +108,7 @@ pytest test_app.py -k "log or masked" -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch11-error-handling
 docker-compose up -d
 
 # 취약한 버전 - 스택 트레이스 노출

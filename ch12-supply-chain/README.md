@@ -206,6 +206,7 @@ pytest test_tools.py -k "syntax" -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch12-supply-chain
 docker-compose up --build
 
 # 스캔 결과 확인

@@ -119,6 +119,7 @@ pytest test_app.py::TestSecureApp -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch04-sql-injection
 docker-compose up -d
 
 # 취약한 버전 - Authentication Bypass

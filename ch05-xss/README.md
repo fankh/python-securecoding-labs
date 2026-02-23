@@ -89,6 +89,7 @@ pytest test_app.py -k "csp" -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch05-xss
 docker-compose up -d
 
 # 취약한 버전 - Stored XSS

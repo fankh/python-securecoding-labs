@@ -120,6 +120,7 @@ pytest test_app.py::TestVulnerableApp::test_injection_accepted -v
 
 ### 3. Docker 테스트
 ```bash
+cd ch03-command-injection
 docker-compose up -d
 
 # 취약한 버전 테스트 (명령어 실행됨)

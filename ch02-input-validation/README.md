@@ -93,6 +93,7 @@ pytest test_app.py::TestVulnerableApp::test_blacklist_bypass_uppercase -v -s
 
 ### 2. Docker 테스트
 ```bash
+cd ch02-input-validation
 docker-compose up -d
 
 # 취약한 버전 테스트

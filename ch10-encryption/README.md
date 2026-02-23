@@ -101,6 +101,7 @@ pytest test_app.py -k "hash" -v
 
 ### 2. Docker 테스트
 ```bash
+cd ch10-encryption
 docker-compose up -d
 
 # 취약한 버전 - DES/ECB 모드
