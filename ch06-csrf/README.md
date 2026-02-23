@@ -105,14 +105,20 @@ pytest test_app.py::TestSecureApp -v
 cd ch06-csrf
 docker-compose up -d
 
-# 취약한 버전 - CSRF 공격 시뮬레이션
+# 취약한 버전 - CSRF 공격 시뮬레이션 (브라우저 세션 필요)
 # 1. 브라우저에서 http://localhost:5001 접속 후 alice로 로그인
-# 2. 새 탭에서 아래 HTML 파일 열기
+# 2. 로그인 후 세션 쿠키가 설정된 상태에서 아래 curl 실행
+# 참고: CSRF는 브라우저 세션을 이용한 공격이므로 완전한 테스트는 수동 테스트 권장
+
+# 취약한 버전 - 토큰 없이 송금 가능 (세션 쿠키 필요)
+# curl -X POST http://localhost:5001/transfer \
+#   -H "Cookie: session=<로그인_세션_쿠키>" \
+#   -d "to=attacker&amount=100"
 
 # 안전한 버전 - CSRF 토큰 필요
 curl -X POST http://localhost:5002/transfer \
   -d "to=attacker&amount=100"
-# 결과: CSRF 토큰 누락으로 실패
+# 결과: CSRF 토큰 누락으로 실패 (400 Bad Request)
 
 docker-compose down
 ```
