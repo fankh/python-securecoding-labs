@@ -63,7 +63,25 @@ subprocess.run(["ping", "-c", "3", host], shell=False)
 
 ## 테스트 방법
 
-### 1. pytest 실행 (권장)
+### 1. Bandit 정적 분석 (권장)
+```bash
+cd ch03-command-injection
+
+# 자동 스캔 (취약한 코드 vs 안전한 코드 비교)
+./test_bandit.sh
+
+# 또는 수동 실행
+bandit -r vulnerable/ -ll
+bandit -r secure/ -ll
+```
+
+**예상 결과:**
+| 코드 | Bandit 결과 |
+|------|------------|
+| `vulnerable/app.py` | 🔴 B602: shell=True 경고<br>🔴 B605: os.popen() 경고 |
+| `secure/app.py` | ✅ 문제 없음 (shell=False 사용) |
+
+### 2. pytest 실행
 ```bash
 cd ch03-command-injection
 pytest test_app.py -v
@@ -76,7 +94,7 @@ pytest test_app.py -v
 | `test_injection_accepted` | 취약: 인젝션 허용 |
 | `test_injection_blocked` | 안전: 인젝션 차단 |
 
-### 2. Docker 테스트
+### 3. Docker 테스트
 ```bash
 docker-compose up -d
 
@@ -89,15 +107,34 @@ curl -X POST http://localhost:5002/ping -d "host=127.0.0.1; whoami"
 docker-compose down
 ```
 
-### 3. 수동 테스트
+### 4. 수동 테스트
 1. http://localhost:5001 접속
 2. Host 입력란에 `127.0.0.1; whoami` 입력
 3. 명령어 실행 결과 확인 (취약점)
 4. http://localhost:5002에서 동일 테스트
 5. 에러 또는 차단 확인 (방어 성공)
 
+## 보안 스캐닝
+
+### Bandit 취약점 검출
+```bash
+# 전체 스캔
+bandit -r . -ll
+
+# 특정 파일 스캔
+bandit vulnerable/app.py
+
+# JSON 출력
+bandit -r vulnerable/ -f json -o bandit-report.json
+```
+
+**검출되는 취약점:**
+- **B602 (HIGH)**: subprocess with shell=True
+- **B605 (HIGH)**: Starting a process with a shell (os.popen)
+
 ## 체크리스트
 - [ ] shell=True 사용하지 않기
 - [ ] 명령어와 인자를 리스트로 분리
 - [ ] 사용자 입력 화이트리스트 검증
 - [ ] timeout 설정으로 DoS 방지
+- [ ] Bandit 정적 분석 통과

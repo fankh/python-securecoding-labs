@@ -49,7 +49,25 @@ csrf = CSRFProtect(app)
 
 ## 테스트 방법
 
-### 1. pytest 실행 (권장)
+### 1. Bandit 정적 분석 (권장)
+```bash
+cd ch06-csrf
+
+# 자동 스캔 (취약한 코드 vs 안전한 코드 비교)
+./test_bandit.sh
+
+# 또는 수동 실행
+bandit -r vulnerable/ -ll
+bandit -r secure/ -ll
+```
+
+**예상 결과:**
+| 코드 | Bandit 결과 |
+|------|------------|
+| `vulnerable/app.py` | 🔴 B105: 하드코딩된 secret_key<br>🔴 B201: debug=True 활성화 |
+| `secure/app.py` | ⚠️ B105: secret_key (환경변수 권장)<br>✅ debug=False |
+
+### 2. pytest 실행
 ```bash
 cd ch06-csrf
 pytest test_app.py -v
@@ -62,7 +80,7 @@ pytest test_app.py -v
 | (취약 버전) | CSRF 토큰 없이 요청 허용 |
 | (안전 버전) | CSRF 토큰 검증 |
 
-### 2. Docker 테스트
+### 3. Docker 테스트
 ```bash
 docker-compose up -d
 
@@ -78,14 +96,45 @@ curl -X POST http://localhost:5002/transfer \
 docker-compose down
 ```
 
-### 3. 수동 테스트
+### 4. 수동 테스트
 1. http://localhost:5001 접속, alice로 로그인
 2. 개발자 도구에서 CSRF 토큰 없이 송금 요청
 3. 송금 성공 확인 (취약점)
 4. http://localhost:5002에서 동일 테스트
 5. CSRF 토큰 없으면 거부 확인 (방어 성공)
 
+## 보안 스캐닝
+
+### Bandit 취약점 검출
+```bash
+# 전체 스캔
+bandit -r . -ll
+
+# 특정 파일 스캔
+bandit vulnerable/app.py
+
+# JSON 출력
+bandit -r vulnerable/ -f json -o bandit-report.json
+```
+
+**검출되는 취약점:**
+- **B105 (LOW)**: Hardcoded password string (secret_key)
+- **B201 (HIGH)**: Flask app with debug=True
+
+**권장 사항:**
+```python
+# 환경변수 사용
+import os
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
+
+# debug=False (프로덕션)
+app.run(debug=False)
+```
+
 ## 체크리스트
 - [ ] CSRF 토큰 구현
 - [ ] POST 요청만 허용
 - [ ] SameSite=Strict 쿠키
+- [ ] secret_key 환경변수 사용
+- [ ] debug=False 설정
+- [ ] Bandit 정적 분석 통과

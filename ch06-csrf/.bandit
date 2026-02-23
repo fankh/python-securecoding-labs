@@ -1,0 +1,20 @@
+# Bandit configuration for CSRF chapter
+[bandit]
+# Exclude test files
+exclude_dirs = []
+
+# Tests to run - focus on web security issues
+tests = B105,B106,B201,B202,B501,B502,B506
+
+# Test IDs:
+# B105: hardcoded_password_string - Hardcoded password in code
+# B106: hardcoded_password_funcarg - Hardcoded password in function
+# B201: flask_debug_true - Flask app with debug=True
+# B202: tarfile_unsafe_members - Unsafe tarfile extraction
+# B501: request_with_no_cert_validation - Requests without cert validation
+# B502: ssl_with_bad_version - SSL with bad version
+# B506: yaml_load - Use of unsafe yaml load
+
+# Severity levels to report
+severity = low
+confidence = low

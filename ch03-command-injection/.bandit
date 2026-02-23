@@ -1,0 +1,19 @@
+# Bandit configuration for Command Injection chapter
+[bandit]
+# Exclude test files and secure code from critical checks
+exclude_dirs = []
+
+# Tests to run
+tests = B602,B603,B604,B605,B606,B607
+
+# Test IDs:
+# B602: shell_true - Use of shell=True in subprocess
+# B603: subprocess_without_shell_equals_true - Subprocess called without shell=True
+# B604: any_other_function_with_shell_equals_true - Function with shell=True
+# B605: start_process_with_a_shell - Starting process with shell
+# B606: start_process_with_no_shell - Starting process without shell
+# B607: start_process_with_partial_path - Partial path in process start
+
+# Severity levels to report
+severity = low
+confidence = low
