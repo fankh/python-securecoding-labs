@@ -26,6 +26,7 @@ Content-Type 헤더만 검사하거나 아예 검사하지 않음
 ## 실습 방법
 
 ```bash
+cd ch07-file-upload
 docker-compose up --build
 ```
 

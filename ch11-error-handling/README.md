@@ -22,6 +22,7 @@
 ## 실습 방법
 
 ```bash
+cd ch11-error-handling
 docker-compose up --build
 ```
 

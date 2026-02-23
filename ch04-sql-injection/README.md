@@ -8,6 +8,7 @@
 ## 실습 환경 실행
 
 ```bash
+cd ch04-sql-injection
 # 취약한 버전과 안전한 버전 동시 실행
 docker-compose up -d
 

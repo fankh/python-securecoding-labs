@@ -8,6 +8,7 @@
 ## 실습 환경 실행
 
 ```bash
+cd ch10-encryption
 docker-compose up -d
 
 # 취약한 버전: http://localhost:5001

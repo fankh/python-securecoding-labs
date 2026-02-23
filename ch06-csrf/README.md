@@ -8,6 +8,7 @@
 ## 실습 환경
 
 ```bash
+cd ch06-csrf
 docker-compose up -d
 # 취약한 버전: http://localhost:5001
 # 안전한 버전: http://localhost:5002
