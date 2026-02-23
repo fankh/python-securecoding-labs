@@ -78,10 +78,40 @@ def validate_username(username: str) -> bool:
 - [ ] 입력값 화이트리스트 검증
 - [ ] 에러 메시지에서 쿼리 정보 숨기기
 - [ ] 최소 권한 DB 계정 사용
+- [ ] secret_key 환경변수 사용
+- [ ] debug=False 설정 (프로덕션)
+- [ ] Bandit 정적 분석 통과
 
 ## 테스트 방법
 
-### 1. pytest 실행 (권장)
+### 1. Bandit 정적 분석 (권장)
+```bash
+cd ch04-sql-injection
+
+# 자동 스캔 (취약한 코드 vs 안전한 코드 비교)
+./test_bandit.sh
+
+# 또는 수동 실행
+bandit -r vulnerable/ -ll
+bandit -r secure/ -ll
+```
+
+**예상 결과:**
+| 코드 | Bandit 결과 |
+|------|------------|
+| `vulnerable/app.py` | 🔴 B608: 하드코딩된 SQL 쿼리 (문자열 포맷팅)<br>🔴 B201: debug=True 활성화<br>🔴 B105: 하드코딩된 secret_key |
+| `secure/app.py` | ✅ SQL 인젝션 없음 (ORM 사용)<br>⚠️ B105: secret_key (환경변수 권장) |
+
+**Bandit가 탐지하는 SQL 인젝션 패턴:**
+- 문자열 포맷팅을 사용한 SQL 쿼리 (`f"SELECT * FROM users WHERE username = '{username}'"`)
+- `%` 연산자를 사용한 SQL 쿼리 (`"SELECT * FROM users WHERE id = %s" % user_id`)
+- `+` 연산자를 사용한 SQL 쿼리 (`"SELECT * FROM users WHERE name = '" + name + "'"`)
+
+**안전한 패턴:**
+- Parameterized query: `cursor.execute("SELECT * FROM users WHERE username = ?", (username,))`
+- ORM 사용: `User.query.filter_by(username=username).first()`
+
+### 2. pytest 실행
 ```bash
 cd ch04-sql-injection
 pytest test_app.py -v
@@ -118,7 +148,7 @@ pytest test_app.py::TestSecureApp -v
 # 실제 공격 테스트는 Docker 또는 수동 테스트 섹션 참고
 ```
 
-### 2. Docker 테스트
+### 3. Docker 테스트
 ```bash
 cd ch04-sql-injection
 docker-compose up -d
@@ -137,12 +167,50 @@ curl -X POST http://localhost:5002/login \
 docker-compose down
 ```
 
-### 3. 수동 테스트
+### 4. 수동 테스트
 1. http://localhost:5001 접속
 2. Username: `' OR '1'='1`, Password: 아무 값
 3. 로그인 성공 확인 (취약점)
 4. http://localhost:5002에서 동일 테스트
 5. 로그인 실패 확인 (방어 성공)
+
+## 보안 스캐닝
+
+### Bandit 취약점 검출
+```bash
+# 전체 스캔
+bandit -r . -ll
+
+# 특정 파일 스캔
+bandit vulnerable/app.py
+
+# JSON 출력
+bandit -r vulnerable/ -f json -o bandit-report.json
+```
+
+**검출되는 취약점:**
+- **B608 (MEDIUM)**: Hardcoded SQL expressions - 문자열 포맷팅으로 SQL 쿼리 생성
+- **B201 (HIGH)**: Flask app with debug=True
+- **B105 (LOW)**: Hardcoded password string (secret_key)
+
+**권장 사항:**
+```python
+# ❌ 취약: 문자열 포맷팅
+query = f"SELECT * FROM users WHERE username = '{username}'"
+
+# ✅ 안전: Parameterized Query
+cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+
+# ✅ 안전: ORM 사용
+user = User.query.filter_by(username=username).first()
+
+# 환경변수 사용
+import os
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
+
+# debug=False (프로덕션)
+app.run(debug=False)
+```
 
 ## 참고 자료
 - [OWASP SQL Injection](https://owasp.org/www-community/attacks/SQL_Injection)

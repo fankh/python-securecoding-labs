@@ -1,0 +1,16 @@
+# Bandit configuration for SQL Injection chapter
+[bandit]
+# Exclude test files from checks
+exclude_dirs = []
+
+# Tests to run
+tests = B608,B201,B105
+
+# Test IDs:
+# B608: hardcoded_sql_expressions - Possible SQL injection vector through string-based query construction
+# B201: flask_debug_true - Flask app with debug=True
+# B105: hardcoded_password_string - Hardcoded password strings
+
+# Severity levels to report
+severity = low
+confidence = low
