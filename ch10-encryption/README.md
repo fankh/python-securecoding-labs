@@ -61,12 +61,43 @@ cd ch10-encryption
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 14%]
+test_app.py::TestVulnerableApp::test_encrypt PASSED                  [ 28%]
+test_app.py::TestVulnerableApp::test_hash PASSED                     [ 42%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 57%]
+test_app.py::TestSecureApp::test_encrypt_decrypt PASSED              [ 71%]
+test_app.py::TestSecureApp::test_hash_sha256 PASSED                  [ 85%]
+test_app.py::TestSecureApp::test_encrypt_different_nonce PASSED      [100%]
+
+============================== 7 passed in 0.48s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_encrypt` | 취약: DES/ECB 암호화 |
-| `test_hash` | 해시 기능 테스트 |
-| `test_encrypt_decrypt` | 안전: AES-GCM 암복호화 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 접근 테스트 | 두 버전 모두 통과 |
+| `test_encrypt` | 취약: DES/ECB 암호화 테스트 | 취약 버전만 통과 |
+| `test_hash` | 취약: MD5 해시 테스트 | 취약 버전만 통과 |
+| `test_encrypt_decrypt` | 안전: AES-GCM 암복호화 테스트 | 안전 버전만 통과 |
+| `test_hash_sha256` | 안전: SHA-256 해시 테스트 | 안전 버전만 통과 |
+| `test_encrypt_different_nonce` | 안전: 동일 평문 → 다른 암호문 확인 | 안전 버전만 통과 |
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# 암호화 관련 테스트만 실행
+pytest test_app.py -k "encrypt" -v
+
+# 해시 관련 테스트만 실행
+pytest test_app.py -k "hash" -v
+```
 
 ### 2. Docker 테스트
 ```bash

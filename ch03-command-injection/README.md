@@ -87,12 +87,36 @@ cd ch03-command-injection
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 16%]
+test_app.py::TestVulnerableApp::test_ping_valid PASSED               [ 33%]
+test_app.py::TestVulnerableApp::test_injection_accepted PASSED       [ 50%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 66%]
+test_app.py::TestSecureApp::test_ping_valid PASSED                   [ 83%]
+test_app.py::TestSecureApp::test_injection_blocked PASSED            [100%]
+
+============================== 6 passed in 0.45s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_ping_valid` | 정상 IP 입력 테스트 |
-| `test_injection_accepted` | 취약: 인젝션 허용 |
-| `test_injection_blocked` | 안전: 인젝션 차단 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_ping_valid` | 정상 IP 입력 (127.0.0.1) 테스트 | 두 버전 모두 통과 |
+| `test_injection_accepted` | 취약: `127.0.0.1; whoami` 인젝션 허용 | 취약 버전만 통과 |
+| `test_injection_blocked` | 안전: 인젝션 시도 시 에러 반환 | 안전 버전만 통과 |
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# 특정 테스트만 실행
+pytest test_app.py::TestVulnerableApp::test_injection_accepted -v
+```
 
 ### 3. Docker 테스트
 ```bash

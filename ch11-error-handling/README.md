@@ -68,11 +68,43 @@ cd ch11-error-handling
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 14%]
+test_app.py::TestVulnerableApp::test_error_exposes_trace PASSED      [ 28%]
+test_app.py::TestVulnerableApp::test_sensitive_log PASSED            [ 42%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 57%]
+test_app.py::TestSecureApp::test_error_generic PASSED                [ 71%]
+test_app.py::TestSecureApp::test_error_id_present PASSED             [ 85%]
+test_app.py::TestSecureApp::test_sensitive_masked PASSED             [100%]
+
+============================== 7 passed in 0.46s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_error_exposes_trace` | 취약: 스택 트레이스 노출 |
-| `test_error_generic` | 안전: 일반 에러 메시지 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 접근 테스트 | 두 버전 모두 통과 |
+| `test_error_exposes_trace` | 취약: 스택 트레이스 노출 | 취약 버전만 통과 |
+| `test_sensitive_log` | 취약: 민감 정보 로그 기록 | 취약 버전만 통과 |
+| `test_error_generic` | 안전: 일반 에러 메시지 | 안전 버전만 통과 |
+| `test_error_id_present` | 안전: error_id로 추적 가능 | 안전 버전만 통과 |
+| `test_sensitive_masked` | 안전: 민감 정보 마스킹 확인 | 안전 버전만 통과 |
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# 에러 처리 관련 테스트만 실행
+pytest test_app.py -k "error" -v
+
+# 로깅 관련 테스트만 실행
+pytest test_app.py -k "log or masked" -v
+```
 
 ### 2. Docker 테스트
 ```bash

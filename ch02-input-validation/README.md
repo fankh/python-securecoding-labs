@@ -53,14 +53,43 @@ cd ch02-input-validation
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index_returns_200 PASSED        [  9%]
+test_app.py::TestVulnerableApp::test_register_valid_input PASSED     [ 18%]
+test_app.py::TestVulnerableApp::test_blacklist_bypass_uppercase PASSED [ 27%]
+test_app.py::TestVulnerableApp::test_no_type_validation PASSED       [ 36%]
+test_app.py::TestVulnerableApp::test_search_endpoint PASSED          [ 45%]
+test_app.py::TestSecureApp::test_index_returns_200 PASSED            [ 54%]
+test_app.py::TestSecureApp::test_register_valid_input PASSED         [ 63%]
+test_app.py::TestSecureApp::test_rejects_invalid_username PASSED     [ 72%]
+test_app.py::TestSecureApp::test_rejects_invalid_email PASSED        [ 81%]
+test_app.py::TestSecureApp::test_rejects_invalid_age PASSED          [ 90%]
+test_app.py::TestSecureApp::test_safe_regex_search PASSED            [100%]
+
+============================= 11 passed in 0.52s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_blacklist_bypass_uppercase` | 취약: 대소문자 우회 허용 |
-| `test_no_type_validation` | 취약: 타입 검증 없음 |
-| `test_rejects_invalid_username` | 안전: XSS 차단 |
-| `test_rejects_invalid_email` | 안전: 이메일 검증 |
-| `test_rejects_invalid_age` | 안전: 범위 검증 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_blacklist_bypass_uppercase` | 취약: `<SCRIPT>` 대소문자 우회 허용 | 취약 버전만 통과 |
+| `test_no_type_validation` | 취약: 잘못된 타입 (age='문자열') 허용 | 취약 버전만 통과 |
+| `test_rejects_invalid_username` | 안전: `<script>` 태그 차단 (Pydantic) | 안전 버전만 통과 |
+| `test_rejects_invalid_email` | 안전: 잘못된 이메일 형식 거부 | 안전 버전만 통과 |
+| `test_rejects_invalid_age` | 안전: 범위 외 나이(200) 거부 | 안전 버전만 통과 |
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# 특정 테스트만 실행
+pytest test_app.py::TestVulnerableApp::test_blacklist_bypass_uppercase -v -s
+```
 
 ### 2. Docker 테스트
 ```bash

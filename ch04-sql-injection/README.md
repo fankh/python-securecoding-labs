@@ -86,12 +86,36 @@ cd ch04-sql-injection
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 16%]
+test_app.py::TestVulnerableApp::test_login_valid PASSED              [ 33%]
+test_app.py::TestVulnerableApp::test_search PASSED                   [ 50%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 66%]
+test_app.py::TestSecureApp::test_login_valid PASSED                  [ 83%]
+test_app.py::TestSecureApp::test_search PASSED                       [100%]
+
+============================== 6 passed in 0.48s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_index` | 메인 페이지 접근 |
-| `test_login_valid` | 정상 로그인 테스트 |
-| `test_search` | 검색 기능 테스트 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 (/) 접근 테스트 | 두 버전 모두 통과 |
+| `test_login_valid` | 정상 로그인 (alice/password) 테스트 | 두 버전 모두 통과 |
+| `test_search` | 검색 기능 기본 테스트 | 두 버전 모두 통과 |
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# SQL Injection 수동 테스트 (pytest로는 공격 테스트 안함)
+# 실제 공격 테스트는 Docker 또는 수동 테스트 섹션 참고
+```
 
 ### 2. Docker 테스트
 ```bash

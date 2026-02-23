@@ -73,12 +73,31 @@ cd ch06-csrf
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 50%]
+test_app.py::TestSecureApp::test_index PASSED                        [100%]
+
+============================== 2 passed in 0.35s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_index` | 메인 페이지 접근 |
-| (취약 버전) | CSRF 토큰 없이 요청 허용 |
-| (안전 버전) | CSRF 토큰 검증 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 (/) 접근 테스트 | 두 버전 모두 통과 |
+
+**참고:**
+- pytest는 기본 기능만 테스트 (CSRF 공격 테스트는 수동/Docker 테스트 참고)
+- CSRF 토큰 검증은 브라우저 세션이 필요하여 수동 테스트 권장
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+```
 
 ### 3. Docker 테스트
 ```bash

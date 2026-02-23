@@ -143,12 +143,37 @@ cd ch07-file-upload
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 16%]
+test_app.py::TestVulnerableApp::test_upload_txt PASSED               [ 33%]
+test_app.py::TestVulnerableApp::test_upload_php PASSED               [ 50%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 66%]
+test_app.py::TestSecureApp::test_upload_txt PASSED                   [ 83%]
+test_app.py::TestSecureApp::test_reject_php PASSED                   [100%]
+
+============================== 6 passed in 0.52s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_upload_txt` | 정상 텍스트 파일 업로드 |
-| `test_upload_php` | 취약: PHP 파일 허용 |
-| `test_reject_php` | 안전: PHP 파일 거부 (400) |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 (/) 접근 테스트 | 두 버전 모두 통과 |
+| `test_upload_txt` | 정상 텍스트 파일 업로드 | 두 버전 모두 통과 |
+| `test_upload_php` | 취약: PHP 파일 허용 | 취약 버전만 통과 |
+| `test_reject_php` | 안전: PHP 파일 거부 (400) | 안전 버전만 통과 |
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# 특정 테스트만 실행
+pytest test_app.py::TestSecureApp::test_reject_php -v
+```
 
 ### 2. Docker 테스트
 ```bash

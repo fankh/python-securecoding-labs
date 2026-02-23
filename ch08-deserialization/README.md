@@ -68,11 +68,34 @@ cd ch08-deserialization
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 25%]
+test_app.py::TestVulnerableApp::test_save_session PASSED             [ 50%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 75%]
+test_app.py::TestSecureApp::test_save_session PASSED                 [100%]
+
+============================== 4 passed in 0.38s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_index` | 메인 페이지 접근 |
-| `test_save_session` | 세션 저장 기능 테스트 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 접근 테스트 | 두 버전 모두 통과 |
+| `test_save_session` | 세션 저장 기능 테스트 | 두 버전 모두 통과 |
+
+**참고:**
+- pytest는 기본 기능만 테스트 (실제 Pickle RCE 공격은 수동/Docker 테스트 참고)
+- Pickle 역직렬화 공격은 악성 페이로드가 필요하여 수동 테스트 권장
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+```
 
 ### 2. Docker 테스트
 ```bash

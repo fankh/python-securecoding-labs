@@ -60,12 +60,32 @@ cd ch05-xss
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 20%]
+test_app.py::TestVulnerableApp::test_post_message PASSED             [ 40%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 60%]
+test_app.py::TestSecureApp::test_post_message PASSED                 [ 80%]
+test_app.py::TestSecureApp::test_csp_header PASSED                   [100%]
+
+============================== 5 passed in 0.42s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_post_message` | 정상 메시지 등록 |
-| `test_xss_stored` | 취약: XSS 스크립트 저장 |
-| `test_csp_header` | 안전: CSP 헤더 존재 확인 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_post_message` | 정상 메시지 등록 테스트 | 두 버전 모두 통과 |
+| `test_xss_stored` | 취약: `<script>alert('XSS')</script>` 저장 | 취약 버전만 통과 |
+| `test_csp_header` | 안전: Content-Security-Policy 헤더 확인 | 안전 버전만 통과 |
+
+**개별 테스트 실행:**
+```bash
+# XSS 취약점 테스트만 실행
+pytest test_app.py -k "xss" -v
+
+# CSP 헤더 테스트만 실행
+pytest test_app.py -k "csp" -v
+```
 
 ### 2. Docker 테스트
 ```bash

@@ -65,11 +65,42 @@ cd ch09-authentication
 pytest test_app.py -v
 ```
 
+**예상 출력:**
+```
+test_app.py::TestVulnerableApp::test_index PASSED                    [ 16%]
+test_app.py::TestVulnerableApp::test_register PASSED                 [ 33%]
+test_app.py::TestVulnerableApp::test_login PASSED                    [ 50%]
+test_app.py::TestSecureApp::test_index PASSED                        [ 66%]
+test_app.py::TestSecureApp::test_register PASSED                     [ 83%]
+test_app.py::TestSecureApp::test_login PASSED                        [100%]
+
+============================== 6 passed in 0.55s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_index` | 메인 페이지 접근 |
-| `test_register` | 사용자 등록 기능 테스트 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_index` | 메인 페이지 접근 테스트 | 두 버전 모두 통과 |
+| `test_register` | 사용자 등록 기능 테스트 | 두 버전 모두 통과 |
+| `test_login` | 로그인 기능 테스트 | 두 버전 모두 통과 |
+
+**참고:**
+- pytest는 기본 기능만 테스트
+- 해시 알고리즘 차이(MD5 vs bcrypt)는 수동/Docker 테스트에서 확인
+- JWT 토큰 검증은 브라우저 세션이 필요하여 수동 테스트 권장
+
+**개별 테스트 실행:**
+```bash
+# 취약한 버전만 테스트
+pytest test_app.py::TestVulnerableApp -v
+
+# 안전한 버전만 테스트
+pytest test_app.py::TestSecureApp -v
+
+# 특정 기능만 테스트
+pytest test_app.py -k "register" -v
+pytest test_app.py -k "login" -v
+```
 
 ### 2. Docker 테스트
 ```bash

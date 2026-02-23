@@ -166,14 +166,43 @@ cd ch12-supply-chain
 pytest test_tools.py -v
 ```
 
+**예상 출력:**
+```
+test_tools.py::test_vulnerable_requirements_exist PASSED             [ 20%]
+test_tools.py::test_secure_requirements_exist PASSED                 [ 40%]
+test_tools.py::test_scan_script_syntax PASSED                        [ 60%]
+test_tools.py::test_check_hashes_syntax PASSED                       [ 80%]
+test_tools.py::test_secure_uses_pinned_versions PASSED               [100%]
+
+============================== 5 passed in 0.35s ==============================
+```
+
 **테스트 항목:**
-| 테스트 | 설명 |
-|--------|------|
-| `test_vulnerable_requirements_exist` | 취약 의존성 파일 존재 |
-| `test_secure_requirements_exist` | 안전 의존성 파일 존재 |
-| `test_scan_script_syntax` | 스캔 스크립트 문법 확인 |
-| `test_check_hashes_syntax` | 해시 검증 스크립트 문법 확인 |
-| `test_secure_uses_pinned_versions` | 버전 고정(==) 사용 확인 |
+| 테스트 | 설명 | 결과 |
+|--------|------|------|
+| `test_vulnerable_requirements_exist` | 취약 의존성 파일(`requirements_vulnerable.txt`) 존재 확인 | 통과 |
+| `test_secure_requirements_exist` | 안전 의존성 파일(`requirements_secure.txt`) 존재 확인 | 통과 |
+| `test_scan_script_syntax` | 스캔 스크립트(`scan_dependencies.py`) 문법 확인 | 통과 |
+| `test_check_hashes_syntax` | 해시 검증 스크립트(`check_hashes.py`) 문법 확인 | 통과 |
+| `test_secure_uses_pinned_versions` | 버전 고정(==) 사용 확인 (>= 사용 금지) | 통과 |
+
+**참고:**
+- pytest는 파일 존재 및 기본 구문만 테스트
+- 실제 취약점 스캔은 Docker 또는 직접 스캔 섹션 참고
+- pip-audit, safety 도구를 사용한 의존성 검사는 수동 실행 필요
+
+**개별 테스트 실행:**
+```bash
+# 특정 테스트만 실행
+pytest test_tools.py::test_vulnerable_requirements_exist -v
+pytest test_tools.py::test_secure_uses_pinned_versions -v
+
+# 파일 존재 테스트만 실행
+pytest test_tools.py -k "exist" -v
+
+# 스크립트 문법 테스트만 실행
+pytest test_tools.py -k "syntax" -v
+```
 
 ### 2. Docker 테스트
 ```bash
