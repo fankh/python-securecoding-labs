@@ -84,10 +84,10 @@ safety check                  # 현재 환경 검사
 safety check -r requirements.txt --full-report
 ```
 
-### bandit (정적 분석)
+### python -m bandit(정적 분석)
 ```bash
 pip install bandit
-bandit -r src/
+python -m bandit-r src/
 ```
 
 ## CI/CD 통합 예시
@@ -119,8 +119,8 @@ jobs:
       - name: safety scan
         run: safety check -r requirements.txt
 
-      - name: bandit scan
-        run: bandit -r src/ -f json -o bandit-report.json
+      - name: python -m banditscan
+        run: python -m bandit-r src/ -f json -o bandit-report.json
 ```
 
 ## 모범 사례

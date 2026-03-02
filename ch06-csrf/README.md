@@ -58,8 +58,8 @@ cd ch06-csrf
 bash test_bandit.sh
 
 # 또는 수동 실행
-bandit -r vulnerable/ -ll
-bandit -r secure/ -ll
+python -m bandit-r vulnerable/ -ll
+python -m bandit-r secure/ -ll
 ```
 
 **예상 결과:**
@@ -135,13 +135,13 @@ docker-compose down
 ### Bandit 취약점 검출
 ```bash
 # 전체 스캔
-bandit -r . -ll
+python -m bandit-r . -ll
 
 # 특정 파일 스캔
-bandit vulnerable/app.py
+python -m banditvulnerable/app.py
 
 # JSON 출력
-bandit -r vulnerable/ -f json -o bandit-report.json
+python -m bandit-r vulnerable/ -f json -o bandit-report.json
 ```
 
 **검출되는 취약점:**

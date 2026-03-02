@@ -18,12 +18,12 @@ pip install -q bandit 2>/dev/null || pip3 install -q bandit 2>/dev/null
 echo ""
 echo "=== Scanning VULNERABLE code ==="
 echo ""
-bandit -r vulnerable/ -f txt -ll || true
+python -m bandit -r vulnerable/ -f txt -ll || true
 
 echo ""
 echo "=== Scanning SECURE code ==="
 echo ""
-bandit -r secure/ -f txt -ll || true
+python -m bandit -r secure/ -f txt -ll || true
 
 echo ""
 echo "=========================================="
