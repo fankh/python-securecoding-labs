@@ -7,9 +7,9 @@
 
 ## 실습 환경
 
-```bash
+```powershell
 cd ch11-error-handling
-docker-compose up --build
+docker-compose up -d --build
 
 # 취약한 버전: http://localhost:5001
 # 안전한 버전: http://localhost:5002
@@ -32,7 +32,7 @@ docker-compose up --build
 
 ### 공격 1: 스택 트레이스 노출
 
-```bash
+```powershell
 curl.exe "http://localhost:5001/user?id=abc"
 ```
 
@@ -49,7 +49,7 @@ curl.exe "http://localhost:5001/user?id=abc"
 
 ### 공격 2: 데이터베이스 구조 노출
 
-```bash
+```powershell
 curl.exe "http://localhost:5001/user?id=999"
 ```
 
@@ -64,7 +64,7 @@ curl.exe "http://localhost:5001/user?id=999"
 
 ### 공격 3: 시스템 환경 정보 노출
 
-```bash
+```powershell
 curl.exe "http://localhost:5001/debug"
 ```
 
@@ -220,7 +220,7 @@ finally:
 
 ### 1. pytest 실행 (권장)
 
-```bash
+```powershell
 cd ch11-error-handling
 python -m pytest test_app.py -v
 ```
@@ -248,7 +248,7 @@ test_app.py::TestSecureApp::test_transfer_success PASSED             [100%]
 | `test_transfer_success` | 안전: 정상 송금 시 잔액 정확히 변경 확인 |
 
 **개별 테스트 실행:**
-```bash
+```powershell
 python -m pytest test_app.py -k "error" -v
 python -m pytest test_app.py -k "transfer" -v
 ```
@@ -260,11 +260,13 @@ python -m pytest test_app.py -k "transfer" -v
 2. http://localhost:5001/user?id=999 접속 → DB 구조 정보 노출 확인
 3. http://localhost:5001/debug 접속 → 환경 변수 전체 노출 확인
 4. 로그인 실패 → 사용자 존재 여부에 따라 다른 메시지 확인
+5. http://localhost:5001/balance 확인 → 에러 송금 후 잔액 불일치 확인
 
 #### 안전한 버전 테스트
-1. http://localhost:5002/user?id=abc 접속 → 일반 에러 + error_id 확인
+1. http://localhost:5002/user?id=abc 접속 → 일반 에러 메시지 확인
 2. http://localhost:5002/user?id=999 접속 → "Resource not found" 확인
 3. 로그인 실패 → 항상 동일한 "Invalid credentials" 메시지 확인
+4. http://localhost:5002/balance 확인 → 에러 송금 후 잔액 보존 확인
 
 ## 체크리스트
 - [ ] 스택 트레이스를 사용자에게 노출하지 않기
@@ -273,3 +275,4 @@ python -m pytest test_app.py -k "transfer" -v
 - [ ] 동일한 에러 메시지 사용 (사용자 열거 방지)
 - [ ] `debug=False` 설정 (프로덕션)
 - [ ] 디버그 엔드포인트 제거
+- [ ] DB 트랜잭션에서 에러 시 rollback 처리
