@@ -14,3 +14,13 @@ services:
       - "5002:5000"
     environment:
       - APP_MODE=secure
+
+  # 공격자 서버 — attacker.html을 HTTP로 제공
+  attacker:
+    image: python:3.11-slim
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./attacker.html:/app/attacker.html:ro
+    working_dir: /app
+    command: python -m http.server 9000
