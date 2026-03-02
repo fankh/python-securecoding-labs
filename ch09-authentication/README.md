@@ -44,14 +44,12 @@ docker-compose up -d
 
 ### 공격 1: 회원가입 후 MD5 해시 확인
 
-```bash
+```powershell
 # 회원가입
-curl.exe -X POST http://localhost:5001/register \
-  -d "username=testuser&password=pass123"
+curl.exe -X POST http://localhost:5001/register -d "username=testuser&password=pass123"
 
 # 로그인하여 JWT 토큰 획득
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=testuser&password=pass123"
+curl.exe -X POST http://localhost:5001/login -d "username=testuser&password=pass123"
 ```
 
 취약한 버전은 MD5 해시를 사용하므로, 동일 비밀번호는 항상 동일한 해시를 생성합니다.
@@ -59,15 +57,13 @@ curl.exe -X POST http://localhost:5001/login \
 
 ### 공격 2: admin 계정 로그인
 
-```bash
+```powershell
 # admin / admin123으로 로그인
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=admin&password=admin123"
+curl.exe -X POST http://localhost:5001/login -d "username=admin&password=admin123"
 # 결과: JWT 토큰 반환
 
 # 반환된 토큰으로 admin 페이지 접근
-curl.exe -H "Authorization: Bearer <반환된_토큰>" \
-  http://localhost:5001/admin
+curl.exe -H "Authorization: Bearer <반환된_토큰>" http://localhost:5001/admin
 # 결과: "Welcome to admin panel"
 ```
 
@@ -85,15 +81,13 @@ bcrypt (안전): $2b$12$LJ3m4ys3Rl81K7Oe4Hp8dOcBR...
 
 ### 비밀번호 정책 확인
 
-```bash
+```powershell
 # 약한 비밀번호 → 거부됨
-curl.exe -X POST http://localhost:5002/register \
-  -d "username=testuser&password=123"
+curl.exe -X POST http://localhost:5002/register -d "username=testuser&password=123"
 # 결과: "비밀번호는 8자 이상이어야 합니다"
 
 # 강한 비밀번호 → 성공
-curl.exe -X POST http://localhost:5002/register \
-  -d "username=testuser&password=Test1234!"
+curl.exe -X POST http://localhost:5002/register -d "username=testuser&password=Test1234!"
 # 결과: "User registered successfully"
 ```
 

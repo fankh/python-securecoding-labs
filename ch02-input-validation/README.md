@@ -98,12 +98,10 @@ cd ch02-input-validation
 docker-compose up -d
 
 # 취약한 버전 테스트
-curl.exe -X POST http://localhost:5001/register \
-  -d "username=<SCRIPT>alert(1)</SCRIPT>&email=test@test.com&age=25&website=http://test.com"
+curl.exe -X POST http://localhost:5001/register -d "username=<SCRIPT>alert(1)</SCRIPT>&email=test@test.com&age=25&website=http://test.com"
 
 # 안전한 버전 테스트
-curl.exe -X POST http://localhost:5002/register \
-  -d "username=<script>alert(1)</script>&email=test@test.com&age=25&website=http://test.com"
+curl.exe -X POST http://localhost:5002/register -d "username=<script>alert(1)</script>&email=test@test.com&age=25&website=http://test.com"
 
 docker-compose down
 ```

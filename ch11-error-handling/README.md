@@ -71,15 +71,13 @@ curl.exe "http://localhost:5001/debug"
 
 ### 공격 4: 사용자 열거 공격
 
-```bash
+```powershell
 # 존재하는 사용자
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=admin&password=wrong"
+curl.exe -X POST http://localhost:5001/login -d "username=admin&password=wrong"
 # 결과: "Invalid password for existing user"
 
 # 존재하지 않는 사용자
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=nonexist&password=wrong"
+curl.exe -X POST http://localhost:5001/login -d "username=nonexist&password=wrong"
 # 결과: "Username does not exist in our system"
 ```
 

