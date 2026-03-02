@@ -53,7 +53,7 @@ def index():
     <hr>
     <h3>공격 예시</h3>
     <ul>
-        <li>로그인: username에 <code>' OR '1'='1</code> 입력</li>
+        <li>로그인: username에 <code>' OR '1'='1' --</code> 입력</li>
         <li>검색: <code>' UNION SELECT id, username, password FROM users--</code></li>
     </ul>
     """
