@@ -59,7 +59,7 @@ key = kdf.derive(password.encode())
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch10-encryption
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -88,16 +88,16 @@ test_app.py::TestSecureApp::test_encrypt_different_nonce PASSED      [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 
 # 암호화 관련 테스트만 실행
-pytest test_app.py -k "encrypt" -v
+python -m pytest test_app.py -k "encrypt" -v
 
 # 해시 관련 테스트만 실행
-pytest test_app.py -k "hash" -v
+python -m pytest test_app.py -k "hash" -v
 ```
 
 ### 2. Docker 테스트
@@ -106,13 +106,13 @@ cd ch10-encryption
 docker-compose up -d
 
 # 취약한 버전 - DES/ECB 모드
-curl -X POST http://localhost:5001/encrypt -d "plaintext=hello"
-curl -X POST http://localhost:5001/hash -d "text=password"
+curl.exe -X POST http://localhost:5001/encrypt -d "plaintext=hello"
+curl.exe -X POST http://localhost:5001/hash -d "text=password"
 
 # 안전한 버전 - AES-GCM 모드
-curl -X POST http://localhost:5002/encrypt -d "plaintext=hello"
+curl.exe -X POST http://localhost:5002/encrypt -d "plaintext=hello"
 # 반환된 ciphertext로 복호화 테스트
-curl -X POST http://localhost:5002/decrypt -d "ciphertext=<반환값>"
+curl.exe -X POST http://localhost:5002/decrypt -d "ciphertext=<반환값>"
 
 docker-compose down
 ```

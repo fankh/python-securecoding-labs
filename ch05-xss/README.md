@@ -58,7 +58,7 @@ clean_html = bleach.clean(user_input, tags=['b', 'i', 'u'])
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch05-xss
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -82,10 +82,10 @@ test_app.py::TestSecureApp::test_csp_header PASSED                   [100%]
 **개별 테스트 실행:**
 ```bash
 # XSS 취약점 테스트만 실행
-pytest test_app.py -k "xss" -v
+python -m pytest test_app.py -k "xss" -v
 
 # CSP 헤더 테스트만 실행
-pytest test_app.py -k "csp" -v
+python -m pytest test_app.py -k "csp" -v
 ```
 
 ### 2. Docker 테스트
@@ -94,11 +94,11 @@ cd ch05-xss
 docker-compose up -d
 
 # 취약한 버전 - Stored XSS
-curl -X POST http://localhost:5001/post \
+curl.exe -X POST http://localhost:5001/post \
   -d "name=Hacker&message=<script>alert('XSS')</script>"
 
 # 안전한 버전 - CSP 헤더 확인
-curl -I http://localhost:5002/ | grep -i content-security-policy
+curl.exe -I http://localhost:5002/ | findstr /i content-security-policy
 
 docker-compose down
 ```

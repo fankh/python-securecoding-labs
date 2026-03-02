@@ -163,7 +163,7 @@ jobs:
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch12-supply-chain
-pytest test_tools.py -v
+python -m pytest test_tools.py -v
 ```
 
 **예상 출력:**
@@ -194,14 +194,14 @@ test_tools.py::test_secure_uses_pinned_versions PASSED               [100%]
 **개별 테스트 실행:**
 ```bash
 # 특정 테스트만 실행
-pytest test_tools.py::test_vulnerable_requirements_exist -v
-pytest test_tools.py::test_secure_uses_pinned_versions -v
+python -m pytest test_tools.py::test_vulnerable_requirements_exist -v
+python -m pytest test_tools.py::test_secure_uses_pinned_versions -v
 
 # 파일 존재 테스트만 실행
-pytest test_tools.py -k "exist" -v
+python -m pytest test_tools.py -k "exist" -v
 
 # 스크립트 문법 테스트만 실행
-pytest test_tools.py -k "syntax" -v
+python -m pytest test_tools.py -k "syntax" -v
 ```
 
 ### 2. Docker 테스트

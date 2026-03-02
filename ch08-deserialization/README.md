@@ -66,7 +66,7 @@ data = serializer.loads(token)  # 변조 시 예외 발생
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch08-deserialization
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -92,10 +92,10 @@ test_app.py::TestSecureApp::test_save_session PASSED                 [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 ```
 
 ### 2. Docker 테스트
@@ -104,10 +104,10 @@ cd ch08-deserialization
 docker-compose up -d
 
 # 취약한 버전 - Pickle 직렬화 사용
-curl -X POST http://localhost:5001/save_session -d "username=test"
+curl.exe -X POST http://localhost:5001/save_session -d "username=test"
 
 # 안전한 버전 - itsdangerous 서명 사용
-curl -X POST http://localhost:5002/save_session -d "username=test"
+curl.exe -X POST http://localhost:5002/save_session -d "username=test"
 
 # 로그에서 차이 확인
 docker-compose logs

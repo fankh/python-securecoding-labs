@@ -51,7 +51,7 @@ if not re.match(r'^[a-zA-Z0-9_]+$', username):
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch02-input-validation
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -83,13 +83,13 @@ test_app.py::TestSecureApp::test_safe_regex_search PASSED            [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 
 # 특정 테스트만 실행
-pytest test_app.py::TestVulnerableApp::test_blacklist_bypass_uppercase -v -s
+python -m pytest test_app.py::TestVulnerableApp::test_blacklist_bypass_uppercase -v -s
 ```
 
 ### 2. Docker 테스트
@@ -98,11 +98,11 @@ cd ch02-input-validation
 docker-compose up -d
 
 # 취약한 버전 테스트
-curl -X POST http://localhost:5001/register \
+curl.exe -X POST http://localhost:5001/register \
   -d "username=<SCRIPT>alert(1)</SCRIPT>&email=test@test.com&age=25&website=http://test.com"
 
 # 안전한 버전 테스트
-curl -X POST http://localhost:5002/register \
+curl.exe -X POST http://localhost:5002/register \
   -d "username=<script>alert(1)</script>&email=test@test.com&age=25&website=http://test.com"
 
 docker-compose down
