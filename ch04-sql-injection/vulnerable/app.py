@@ -29,6 +29,8 @@ def init_db():
                    ("user1", "password1", "user1@example.com", "user"))
     cursor.execute("INSERT OR IGNORE INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
                    ("user2", "password2", "user2@example.com", "user"))
+    cursor.execute("INSERT OR IGNORE INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
+                   ("alice", "password", "alice@example.com", "user"))
     conn.commit()
     conn.close()
 

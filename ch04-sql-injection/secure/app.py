@@ -41,6 +41,10 @@ def init_db():
             user1.set_password("password1")
             db.session.add(user1)
 
+            alice = User(username="alice", email="alice@example.com", role="user")
+            alice.set_password("password")
+            db.session.add(alice)
+
             db.session.commit()
 
 

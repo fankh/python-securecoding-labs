@@ -25,12 +25,13 @@ query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{pas
 
 ### 공격 방법
 1. http://localhost:5001 접속
-2. Username: `' OR '1'='1`
+2. Username: `' OR '1'='1' --`
 3. Password: 아무 값
 
 ### 예상 결과
 - 비밀번호 없이 로그인 성공
-- 실행된 쿼리: `SELECT * FROM users WHERE username = '' OR '1'='1' AND password = '...'`
+- 실행된 쿼리: `SELECT * FROM users WHERE username = '' OR '1'='1' --' AND password = '...'`
+- `--` 이후는 SQL 주석으로 처리되어 비밀번호 검증이 무시됨
 
 ## 실습 2: SQL Comment Injection (admin'-- 페이로드)
 
@@ -163,8 +164,8 @@ cd ch04-sql-injection
 bash test_bandit.sh
 
 # 또는 수동 실행
-python -m bandit-r vulnerable/ -ll
-python -m bandit-r secure/ -ll
+python -m bandit -r vulnerable/ -ll
+python -m bandit -r secure/ -ll
 ```
 
 **예상 결과:**
@@ -226,7 +227,7 @@ docker-compose up -d
 
 # 취약한 버전 - Authentication Bypass (OR 1=1)
 curl.exe -X POST http://localhost:5001/login \
-  -d "username=' OR '1'='1&password=anything"
+  -d "username=' OR '1'='1' --&password=anything"
 # 결과: 로그인 성공
 
 # 취약한 버전 - SQL Comment Injection (admin'-- 페이로드)
@@ -245,7 +246,7 @@ curl.exe "http://localhost:5001/search?q=' UNION SELECT id, username, password F
 
 # 안전한 버전 - Authentication Bypass 차단
 curl.exe -X POST http://localhost:5002/login \
-  -d "username=' OR '1'='1&password=anything"
+  -d "username=' OR '1'='1' --&password=anything"
 # 결과: 로그인 실패
 
 # 안전한 버전 - SQL Comment Injection 차단
@@ -260,7 +261,7 @@ docker-compose down
 
 #### 테스트 케이스 1: OR 1=1 공격
 1. http://localhost:5001 접속
-2. Username: `' OR '1'='1`, Password: 아무 값
+2. Username: `' OR '1'='1' --`, Password: 아무 값
 3. 로그인 성공 확인 (취약점)
 4. http://localhost:5002에서 동일 테스트
 5. 로그인 실패 확인 (방어 성공)
@@ -284,13 +285,13 @@ docker-compose down
 ### Bandit 취약점 검출
 ```bash
 # 전체 스캔
-python -m bandit-r . -ll
+python -m bandit -r . -ll
 
 # 특정 파일 스캔
-python -m banditvulnerable/app.py
+python -m bandit vulnerable/app.py
 
 # JSON 출력
-python -m bandit-r vulnerable/ -f json -o bandit-report.json
+python -m bandit -r vulnerable/ -f json -o bandit-report.json
 ```
 
 **검출되는 취약점:**
