@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify
 import re
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 
 @app.route("/")

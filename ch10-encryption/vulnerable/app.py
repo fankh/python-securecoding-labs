@@ -8,6 +8,7 @@ import base64
 import hashlib
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 # 취약점: 하드코딩된 암호화 키
 HARDCODED_KEY = b"secret12"  # DES 키 (8바이트)

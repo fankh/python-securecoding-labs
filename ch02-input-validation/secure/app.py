@@ -10,6 +10,7 @@ from flask import Flask, jsonify, request
 from pydantic import BaseModel, EmailStr, HttpUrl, ValidationError, field_validator
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 
 class UserRegistration(BaseModel):

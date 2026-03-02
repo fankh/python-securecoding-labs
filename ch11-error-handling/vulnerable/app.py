@@ -10,6 +10,7 @@ import logging
 import traceback
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 # 취약점: 로그에 민감 정보 기록
 logging.basicConfig(

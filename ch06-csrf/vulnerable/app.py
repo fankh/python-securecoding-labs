@@ -5,6 +5,7 @@ from flask import Flask, request, render_template_string, session, redirect
 import sqlite3
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 app.secret_key = "secret"
 # 취약점: SameSite=None → 다른 사이트에서 쿠키 전송 가능 (CSRF 허용)
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'

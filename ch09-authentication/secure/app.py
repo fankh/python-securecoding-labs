@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 DB_PATH = "auth_secure.db"
 
 # 환경 변수에서 시크릿 로드

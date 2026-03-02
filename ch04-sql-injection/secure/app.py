@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users_secure.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)

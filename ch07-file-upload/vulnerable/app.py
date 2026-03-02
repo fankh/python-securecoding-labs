@@ -5,6 +5,7 @@ from flask import Flask, request, send_from_directory
 import os
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
