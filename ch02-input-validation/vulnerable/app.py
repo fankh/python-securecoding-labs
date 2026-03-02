@@ -17,13 +17,15 @@ def index():
         <input name="email" placeholder="Email"><br><br>
         <input name="age" placeholder="Age"><br><br>
         <input name="url" placeholder="Website URL"><br><br>
+        <input name="gender" placeholder="Gender"><br><br>
+        <input name="phone" placeholder="Phone Number"><br><br>
         <button type="submit">Register</button>
     </form>
     <hr>
     <h3>취약점</h3>
     <ul>
         <li>입력 길이 제한 없음</li>
-        <li>블랙리스트 기반 필터링</li>
+        <li>입력값 검증 없음 (모든 입력 허용)</li>
         <li>정규식 ReDoS 취약</li>
         <li>타입 검증 없음</li>
     </ul>
@@ -36,15 +38,13 @@ def register():
     email = request.form.get("email", "")
     age = request.form.get("age", "")
     url = request.form.get("url", "")
+    gender = request.form.get("gender", "")
+    phone = request.form.get("phone", "")
 
     errors = []
 
-    # 취약점: 블랙리스트 기반 필터링 (우회 가능)
-    blacklist = ["<script>", "javascript:", "onerror"]
-    for bad in blacklist:
-        if bad.lower() in username.lower():
-            errors.append("Username contains forbidden characters")
-            break
+    # 취약점: 입력값 검증 없음 - 모든 입력 허용
+    # <script>, javascript:, onerror 등 악성 입력이 그대로 저장됨
 
     # 취약점: ReDoS 취약 정규식
     # aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa! 입력 시 매우 느림
@@ -63,12 +63,19 @@ def register():
     # file://, javascript: 등 위험한 프로토콜 허용
 
     if errors:
-        return jsonify({"status": "error", "errors": errors})
+        return jsonify({"errors": errors, "status": "error"})
 
-    return jsonify({
-        "status": "success",
-        "data": {"username": username, "email": email, "age": age, "url": url}
-    })
+    # 취약점: 사용자 입력을 이스케이프 없이 HTML에 직접 삽입 (XSS)
+    return f"""
+    <h1>등록 성공!</h1>
+    <p>환영합니다, {username}!</p>
+    <p>이메일: {email}</p>
+    <p>나이: {age}</p>
+    <p>URL: {url}</p>
+    <p>성별: {gender}</p>
+    <p>전화번호: {phone}</p>
+    <a href="/">돌아가기</a>
+    """
 
 
 @app.route("/search", methods=["GET"])

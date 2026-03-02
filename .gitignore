@@ -39,3 +39,7 @@ reports/
 # OS
 .DS_Store
 Thumbs.db
+
+# Tool artifacts
+tmpclaude-*
+.serena/
