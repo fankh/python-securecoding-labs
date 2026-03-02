@@ -9,6 +9,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 app.secret_key = os.urandom(32)
 csrf = CSRFProtect(app)
 DB_PATH = "users_secure.db"

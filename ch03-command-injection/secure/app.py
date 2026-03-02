@@ -8,6 +8,7 @@ import re
 import shlex
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 # 허용된 호스트 패턴 (화이트리스트)
 IP_PATTERN = re.compile(r"^(\d{1,3}\.){3}\d{1,3}$")

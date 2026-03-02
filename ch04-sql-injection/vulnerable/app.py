@@ -6,6 +6,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 DB_PATH = "users.db"
 
 

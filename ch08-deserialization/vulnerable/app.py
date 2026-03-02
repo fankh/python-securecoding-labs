@@ -6,6 +6,7 @@ import pickle
 import base64
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 # 간단한 세션 저장소
 sessions = {}

@@ -7,6 +7,7 @@ import json
 import os
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 # 시크릿 키 (환경 변수에서 로드)
 SECRET_KEY = os.environ.get("SECRET_KEY", "change-this-in-production")

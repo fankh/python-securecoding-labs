@@ -12,6 +12,7 @@ import re
 from functools import wraps
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 # 보안: 구조화된 로깅 설정
 class SensitiveDataFilter(logging.Filter):

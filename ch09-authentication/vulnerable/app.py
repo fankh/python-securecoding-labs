@@ -8,6 +8,7 @@ import sqlite3
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 DB_PATH = "auth.db"
 
 # 취약점: 하드코딩된 시크릿 키

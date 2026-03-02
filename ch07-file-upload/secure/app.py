@@ -8,6 +8,7 @@ import uuid
 import magic
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 UPLOAD_FOLDER = "uploads_secure"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 

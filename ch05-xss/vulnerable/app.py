@@ -5,6 +5,7 @@ from flask import Flask, request, render_template_string
 import sqlite3
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 DB_PATH = "guestbook.db"
 
 

@@ -10,6 +10,7 @@ import base64
 import hashlib
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 
 
 def get_encryption_key() -> bytes:

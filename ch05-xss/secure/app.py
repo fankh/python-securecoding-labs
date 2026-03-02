@@ -8,6 +8,7 @@ import sqlite3
 import bleach
 
 app = Flask(__name__)
+app.json.ensure_ascii = False
 DB_PATH = "guestbook_secure.db"
 
 # 허용된 HTML 태그 (Bleach)
