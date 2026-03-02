@@ -42,6 +42,24 @@ def init_db():
             "INSERT INTO users (username, password, email, credit_card) VALUES (?, ?, ?, ?)",
             ("admin", "admin123", "admin@example.com", "4111-1111-1111-1111")
         )
+        conn.execute(
+            "INSERT INTO users (username, password, email, credit_card) VALUES (?, ?, ?, ?)",
+            ("alice", "password", "alice@example.com", "4222-2222-2222-2222")
+        )
+        conn.commit()
+    except:
+        pass
+    # 잔액 테이블
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS accounts (
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE,
+            balance INTEGER DEFAULT 1000
+        )
+    ''')
+    try:
+        conn.execute("INSERT INTO accounts (username, balance) VALUES (?, ?)", ("admin", 1000))
+        conn.execute("INSERT INTO accounts (username, balance) VALUES (?, ?)", ("alice", 1000))
         conn.commit()
     except:
         pass
@@ -151,6 +169,59 @@ def login():
             return "Invalid password for existing user", 401
         else:
             return "Username does not exist in our system", 401
+
+
+@app.route("/balance")
+def get_balance():
+    """잔액 조회"""
+    conn = get_db()
+    rows = conn.execute("SELECT username, balance FROM accounts").fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in rows])
+
+
+@app.route("/transfer", methods=["POST"])
+def transfer():
+    """취약점: 에러 발생 시 rollback 없음 → 데이터 불일치"""
+    sender = request.form.get("from", "")
+    receiver = request.form.get("to", "")
+    amount = request.form.get("amount", "0")
+
+    conn = get_db()
+    try:
+        amount = int(amount)
+
+        # 1단계: 보내는 사람 잔액 차감 (이 시점에서 커밋됨)
+        conn.execute(
+            "UPDATE accounts SET balance = balance - ? WHERE username = ?",
+            (amount, sender)
+        )
+        conn.commit()  # 취약점: 중간에 커밋 → 2단계 실패 시 돈이 사라짐
+
+        # 2단계: 받는 사람 잔액 증가 (여기서 에러 발생 가능)
+        if receiver == "error":
+            raise Exception("DB connection lost")  # 시뮬레이션: 네트워크 에러
+
+        conn.execute(
+            "UPDATE accounts SET balance = balance + ? WHERE username = ?",
+            (amount, receiver)
+        )
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "status": "success",
+            "message": f"{sender} → {receiver}: {amount}원 송금 완료"
+        })
+    except Exception as e:
+        # 취약점: rollback 없음 → 1단계만 실행되어 돈이 사라짐
+        conn.close()
+        logging.error(f"Transfer error: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": str(e),
+            "warning": "송금 중 에러 발생 — rollback 없음으로 데이터 불일치 가능"
+        }), 500
 
 
 @app.route("/debug")
