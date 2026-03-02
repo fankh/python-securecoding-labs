@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 ### 3. 보안 도구 설치
 ```bash
-pip install python -m banditsafety semgrep
+pip install bandit safety semgrep
 ```
 
 ## 보안 스캐닝 실습
@@ -30,10 +30,10 @@ pip install python -m banditsafety semgrep
 ### Bandit (정적 분석)
 ```bash
 # 현재 디렉토리 스캔
-python -m bandit-r .
+python -m bandit -r .
 
 # 특정 파일 스캔
-python -m banditvulnerable_app.py
+python -m bandit vulnerable_app.py
 ```
 
 ### Safety (의존성 취약점)
