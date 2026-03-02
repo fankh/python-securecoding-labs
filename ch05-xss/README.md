@@ -94,8 +94,7 @@ cd ch05-xss
 docker-compose up -d
 
 # 취약한 버전 - Stored XSS
-curl.exe -X POST http://localhost:5001/post \
-  -d "name=Hacker&message=<script>alert('XSS')</script>"
+curl.exe -X POST http://localhost:5001/post -d "name=Hacker&message=<script>alert('XSS')</script>"
 
 # 안전한 버전 - CSP 헤더 확인
 curl.exe -I http://localhost:5002/ | findstr /i content-security-policy

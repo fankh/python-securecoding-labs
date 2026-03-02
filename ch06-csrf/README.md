@@ -145,19 +145,16 @@ docker-compose up -d
 
 ### curl을 이용한 공격 테스트
 
-```bash
+```powershell
 # 1. 로그인하여 세션 쿠키 획득
-curl.exe -c cookies.txt -X POST http://localhost:5001/login \
-  -d "username=alice" -L
+curl.exe -c cookies.txt -X POST http://localhost:5001/login -d "username=alice" -L
 
 # 2. 정상 송금 (alice → bob 100원)
-curl.exe -b cookies.txt -X POST http://localhost:5001/transfer \
-  -d "to=bob&amount=100" -L
+curl.exe -b cookies.txt -X POST http://localhost:5001/transfer -d "to=bob&amount=100" -L
 
 # 3. CSRF 공격 시뮬레이션 (alice → attacker 500원)
 # 실제 공격에서는 공격자 페이지가 이 요청을 대신 전송
-curl.exe -b cookies.txt -X POST http://localhost:5001/transfer \
-  -d "to=attacker&amount=500" -L
+curl.exe -b cookies.txt -X POST http://localhost:5001/transfer -d "to=attacker&amount=500" -L
 ```
 
 ### GET 요청을 이용한 공격 (이미지 태그)
@@ -189,10 +186,9 @@ def transfer():
 
 ### curl로 CSRF 방어 확인
 
-```bash
+```powershell
 # CSRF 토큰 없이 송금 요청 → 400 에러 (방어 성공)
-curl.exe -X POST http://localhost:5002/transfer \
-  -d "to=attacker&amount=100"
+curl.exe -X POST http://localhost:5002/transfer -d "to=attacker&amount=100"
 ```
 
 **안전한 버전이 방어하는 이유:**
