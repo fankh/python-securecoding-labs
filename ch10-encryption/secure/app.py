@@ -73,9 +73,9 @@ def encrypt():
         # GCM 모드: 암호화 + 무결성 검증
         ciphertext = aesgcm.encrypt(nonce, data.encode(), None)
 
-        # nonce + ciphertext를 함께 저장
+        # nonce + ciphertext를 함께 저장 (URL-safe base64로 인코딩)
         result = nonce + ciphertext
-        encoded = base64.b64encode(result).decode()
+        encoded = base64.urlsafe_b64encode(result).decode()
 
         return jsonify({
             "status": "success",
@@ -91,7 +91,7 @@ def decrypt():
     encrypted = request.form.get("encrypted", "")
 
     try:
-        decoded = base64.b64decode(encrypted)
+        decoded = base64.urlsafe_b64decode(encrypted)
 
         # nonce 분리 (처음 12바이트)
         nonce = decoded[:12]

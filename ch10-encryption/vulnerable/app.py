@@ -49,7 +49,7 @@ def encrypt():
         cipher = DES.new(HARDCODED_KEY, DES.MODE_ECB)
         padded_data = pad(data.encode(), DES.block_size)
         encrypted = cipher.encrypt(padded_data)
-        encoded = base64.b64encode(encrypted).decode()
+        encoded = base64.urlsafe_b64encode(encrypted).decode()
 
         return jsonify({
             "status": "success",
@@ -66,7 +66,7 @@ def decrypt():
 
     try:
         cipher = DES.new(HARDCODED_KEY, DES.MODE_ECB)
-        decoded = base64.b64decode(encrypted)
+        decoded = base64.urlsafe_b64decode(encrypted)
         decrypted = unpad(cipher.decrypt(decoded), DES.block_size)
 
         return jsonify({
