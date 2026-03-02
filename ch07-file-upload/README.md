@@ -39,7 +39,7 @@ docker-compose up --build
 ```bash
 # 허용되지 않은 확장자 테스트
 echo 'test content' > test.php
-curl -F "file=@test.php" http://localhost:5001/upload
+curl.exe -F "file=@test.php" http://localhost:5001/upload
 
 # 취약한 버전: 업로드 성공
 # 안전한 버전: "File type not allowed" 에러
@@ -48,7 +48,7 @@ curl -F "file=@test.php" http://localhost:5001/upload
 ### 2. 경로 탐색 공격
 ```bash
 # 상위 디렉토리에 파일 생성 시도
-curl -F "file=@test.txt;filename=../../../tmp/evil.txt" \
+curl.exe -F "file=@test.txt;filename=../../../tmp/evil.txt" \
      http://localhost:5001/upload
 ```
 
@@ -67,7 +67,7 @@ test.PhP
 ### 4. MIME 타입 위조
 ```bash
 # Content-Type을 image/jpeg로 위장
-curl -F "file=@test.php;type=image/jpeg" \
+curl.exe -F "file=@test.php;type=image/jpeg" \
      http://localhost:5001/upload
 ```
 
@@ -141,7 +141,7 @@ return send_from_directory(UPLOAD_FOLDER, safe_filename)
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch07-file-upload
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -167,13 +167,13 @@ test_app.py::TestSecureApp::test_reject_php PASSED                   [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 
 # 특정 테스트만 실행
-pytest test_app.py::TestSecureApp::test_reject_php -v
+python -m pytest test_app.py::TestSecureApp::test_reject_php -v
 ```
 
 ### 2. Docker 테스트
@@ -183,10 +183,10 @@ docker-compose up -d
 
 # 취약한 버전 - 위험한 확장자 허용
 echo "test content" > test.php
-curl -F "file=@test.php" http://localhost:5001/upload
+curl.exe -F "file=@test.php" http://localhost:5001/upload
 
 # 안전한 버전 - 위험한 확장자 차단
-curl -F "file=@test.php" http://localhost:5002/upload
+curl.exe -F "file=@test.php" http://localhost:5002/upload
 # 결과: "File type not allowed" 에러
 
 docker-compose down

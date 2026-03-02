@@ -69,7 +69,7 @@ subprocess.run(["ping", "-c", "3", host], shell=False)
 cd ch03-command-injection
 
 # 자동 스캔 (취약한 코드 vs 안전한 코드 비교)
-./test_bandit.sh
+bash test_bandit.sh
 
 # 또는 수동 실행
 bandit -r vulnerable/ -ll
@@ -85,7 +85,7 @@ bandit -r secure/ -ll
 ### 2. pytest 실행
 ```bash
 cd ch03-command-injection
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -110,13 +110,13 @@ test_app.py::TestSecureApp::test_injection_blocked PASSED            [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 
 # 특정 테스트만 실행
-pytest test_app.py::TestVulnerableApp::test_injection_accepted -v
+python -m pytest test_app.py::TestVulnerableApp::test_injection_accepted -v
 ```
 
 ### 3. Docker 테스트
@@ -125,10 +125,10 @@ cd ch03-command-injection
 docker-compose up -d
 
 # 취약한 버전 테스트 (명령어 실행됨)
-curl -X POST http://localhost:5001/ping -d "host=127.0.0.1; whoami"
+curl.exe -X POST http://localhost:5001/ping -d "host=127.0.0.1; whoami"
 
 # 안전한 버전 테스트 (차단됨)
-curl -X POST http://localhost:5002/ping -d "host=127.0.0.1; whoami"
+curl.exe -X POST http://localhost:5002/ping -d "host=127.0.0.1; whoami"
 
 docker-compose down
 ```

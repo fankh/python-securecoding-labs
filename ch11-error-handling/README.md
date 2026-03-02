@@ -66,7 +66,7 @@ docker-compose up --build
 ### 1. pytest 실행 (권장)
 ```bash
 cd ch11-error-handling
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -95,16 +95,16 @@ test_app.py::TestSecureApp::test_sensitive_masked PASSED             [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 
 # 에러 처리 관련 테스트만 실행
-pytest test_app.py -k "error" -v
+python -m pytest test_app.py -k "error" -v
 
 # 로깅 관련 테스트만 실행
-pytest test_app.py -k "log or masked" -v
+python -m pytest test_app.py -k "log or masked" -v
 ```
 
 ### 2. Docker 테스트
@@ -113,11 +113,11 @@ cd ch11-error-handling
 docker-compose up -d
 
 # 취약한 버전 - 스택 트레이스 노출
-curl "http://localhost:5001/user?id=abc"
+curl.exe "http://localhost:5001/user?id=abc"
 # 결과: traceback 정보 포함
 
 # 안전한 버전 - 일반 에러 메시지
-curl "http://localhost:5002/user?id=abc"
+curl.exe "http://localhost:5002/user?id=abc"
 # 결과: error_id만 포함, 상세 정보 없음
 
 docker-compose down

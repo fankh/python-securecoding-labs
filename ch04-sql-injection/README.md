@@ -66,12 +66,12 @@ SELECT * FROM users WHERE username = 'admin'
 ### 실습 과정
 ```bash
 # 1. 취약한 버전 테스트
-curl -X POST http://localhost:5001/login \
+curl.exe -X POST http://localhost:5001/login \
   -d "username=admin'--&password=anything"
 # 결과: 로그인 성공 (비밀번호 우회)
 
 # 2. 안전한 버전 테스트
-curl -X POST http://localhost:5002/login \
+curl.exe -X POST http://localhost:5002/login \
   -d "username=admin'--&password=anything"
 # 결과: 로그인 실패 (Parameterized Query로 방어)
 ```
@@ -160,7 +160,7 @@ def validate_username(username: str) -> bool:
 cd ch04-sql-injection
 
 # 자동 스캔 (취약한 코드 vs 안전한 코드 비교)
-./test_bandit.sh
+bash test_bandit.sh
 
 # 또는 수동 실행
 bandit -r vulnerable/ -ll
@@ -185,7 +185,7 @@ bandit -r secure/ -ll
 ### 2. pytest 실행
 ```bash
 cd ch04-sql-injection
-pytest test_app.py -v
+python -m pytest test_app.py -v
 ```
 
 **예상 출력:**
@@ -210,10 +210,10 @@ test_app.py::TestSecureApp::test_search PASSED                       [100%]
 **개별 테스트 실행:**
 ```bash
 # 취약한 버전만 테스트
-pytest test_app.py::TestVulnerableApp -v
+python -m pytest test_app.py::TestVulnerableApp -v
 
 # 안전한 버전만 테스트
-pytest test_app.py::TestSecureApp -v
+python -m pytest test_app.py::TestSecureApp -v
 
 # SQL Injection 수동 테스트 (pytest로는 공격 테스트 안함)
 # 실제 공격 테스트는 Docker 또는 수동 테스트 섹션 참고
@@ -225,31 +225,31 @@ cd ch04-sql-injection
 docker-compose up -d
 
 # 취약한 버전 - Authentication Bypass (OR 1=1)
-curl -X POST http://localhost:5001/login \
+curl.exe -X POST http://localhost:5001/login \
   -d "username=' OR '1'='1&password=anything"
 # 결과: 로그인 성공
 
 # 취약한 버전 - SQL Comment Injection (admin'-- 페이로드)
-curl -X POST http://localhost:5001/login \
+curl.exe -X POST http://localhost:5001/login \
   -d "username=admin'--&password=anything"
 # 결과: admin 계정으로 로그인 성공 (비밀번호 우회)
 
 # 취약한 버전 - 다른 사용자로 주석 우회
-curl -X POST http://localhost:5001/login \
+curl.exe -X POST http://localhost:5001/login \
   -d "username=alice'--&password=wrong"
 # 결과: alice 계정으로 로그인 성공
 
 # 취약한 버전 - UNION Injection
-curl "http://localhost:5001/search?q=' UNION SELECT id, username, password FROM users--"
+curl.exe "http://localhost:5001/search?q=' UNION SELECT id, username, password FROM users--"
 # 결과: 모든 사용자의 비밀번호 노출
 
 # 안전한 버전 - Authentication Bypass 차단
-curl -X POST http://localhost:5002/login \
+curl.exe -X POST http://localhost:5002/login \
   -d "username=' OR '1'='1&password=anything"
 # 결과: 로그인 실패
 
 # 안전한 버전 - SQL Comment Injection 차단
-curl -X POST http://localhost:5002/login \
+curl.exe -X POST http://localhost:5002/login \
   -d "username=admin'--&password=anything"
 # 결과: 로그인 실패 (Parameterized Query로 방어)
 
