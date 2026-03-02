@@ -8,7 +8,7 @@ services:
     environment:
       - APP_MODE=vulnerable
     volumes:
-      - ./logs_vulnerable:/app
+      - ./logs_vulnerable:/app/logs
 
   secure:
     build: .
@@ -17,4 +17,4 @@ services:
     environment:
       - APP_MODE=secure
     volumes:
-      - ./logs_secure:/app
+      - ./logs_secure:/app/logs

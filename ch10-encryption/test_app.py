@@ -23,12 +23,18 @@ class TestVulnerableApp:
         assert resp.status_code == 200
 
     def test_encrypt(self, client):
-        resp = client.post('/encrypt', data={'plaintext': 'hello'})
+        resp = client.post('/encrypt', data={'data': 'hello'})
         assert resp.status_code == 200
+        result = json.loads(resp.data)
+        assert result['status'] == 'success'
+        assert 'encrypted' in result
 
     def test_hash(self, client):
-        resp = client.post('/hash', data={'text': 'password'})
+        resp = client.post('/hash', data={'data': 'password'})
         assert resp.status_code == 200
+        result = json.loads(resp.data)
+        assert 'md5' in result
+        assert 'sha1' in result
 
 
 class TestSecureApp:
@@ -45,13 +51,17 @@ class TestSecureApp:
         assert resp.status_code == 200
 
     def test_encrypt_decrypt(self, client):
-        resp = client.post('/encrypt', data={'plaintext': 'hello'})
+        resp = client.post('/encrypt', data={'data': 'hello'})
         assert resp.status_code == 200
-        data = json.loads(resp.data)
-        ciphertext = data.get('ciphertext', '')
+        result = json.loads(resp.data)
+        assert result['status'] == 'success'
+        encrypted_data = result['encrypted']
 
-        resp = client.post('/decrypt', data={'ciphertext': ciphertext})
+        resp = client.post('/decrypt', data={'encrypted': encrypted_data})
         assert resp.status_code == 200
+        result = json.loads(resp.data)
+        assert result['status'] == 'success'
+        assert result['decrypted'] == 'hello'
 
 
 if __name__ == '__main__':
