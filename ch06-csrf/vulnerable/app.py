@@ -6,6 +6,9 @@ import sqlite3
 
 app = Flask(__name__)
 app.secret_key = "secret"
+# 취약점: SameSite=None → 다른 사이트에서 쿠키 전송 가능 (CSRF 허용)
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = False
 DB_PATH = "users.db"
 
 

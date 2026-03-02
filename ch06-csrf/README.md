@@ -21,7 +21,15 @@ docker-compose up -d
 
 # 취약한 버전: http://localhost:5001
 # 안전한 버전: http://localhost:5002
+# 공격자 서버:  http://localhost:9000/attacker.html
 ```
+
+**서비스 구성:**
+| 서비스 | 포트 | 설명 |
+|--------|------|------|
+| vulnerable | 5001 | CSRF 취약한 은행 서비스 |
+| secure | 5002 | CSRF 방어가 적용된 은행 서비스 |
+| attacker | 9000 | 공격자의 악성 웹서버 (attacker.html 호스팅) |
 
 **테스트 계정:**
 | 사용자 | 초기 잔액 |
@@ -37,7 +45,7 @@ docker-compose up -d
 |------|-------------------|-------------------|
 | CSRF 토큰 | 없음 | Flask-WTF 자동 검증 |
 | 송금 HTTP 메서드 | GET + POST 모두 허용 | POST만 허용 |
-| SameSite 쿠키 | 미설정 | SameSite=Strict |
+| SameSite 쿠키 | `SameSite=None` (모든 사이트 허용) | `SameSite=Strict` |
 | secret_key | 하드코딩 (`"secret"`) | `os.urandom(32)` |
 
 ## 공격 실습 (취약한 버전)
@@ -48,33 +56,22 @@ docker-compose up -d
 2. Username에 `alice` 입력 후 Login 클릭
 3. 잔액 1,000원 확인
 
-### 단계 2: 공격 페이지 준비
+### 단계 2: 공격 페이지 열기
 
-아래 내용을 `attacker.html` 파일로 저장합니다:
+`docker-compose up -d` 실행 시 공격자 서버(port 9000)가 자동으로 시작됩니다.
 
-```html
-<!-- attacker.html -->
-<html>
-<body>
-<h1>축하합니다! 경품에 당첨되었습니다!</h1>
-<p>아래 버튼을 클릭하여 경품을 수령하세요.</p>
-
-<!-- 숨겨진 자동 송금 폼 -->
-<form action="http://localhost:5001/transfer" method="POST">
-    <input type="hidden" name="to" value="attacker">
-    <input type="hidden" name="amount" value="500">
-</form>
-<script>document.forms[0].submit();</script>
-</body>
-</html>
-```
+**중요:** `attacker.html`을 로컬 파일(`file://`)로 열면 **쿠키가 전송되지 않아 공격이 실패**합니다.
+반드시 HTTP 서버를 통해 접속해야 합니다.
 
 ### 단계 3: 공격 실행
 
-1. alice가 로그인된 **동일한 브라우저**에서 `attacker.html` 파일을 엽니다
-2. 페이지가 열리는 즉시 숨겨진 폼이 자동 제출됩니다
+1. alice가 로그인된 **동일한 브라우저**에서 http://localhost:9000/attacker.html 을 엽니다
+2. "경품 수령하기" 버튼을 클릭합니다 (숨겨진 송금 폼이 제출됨)
 3. http://localhost:5001 로 돌아가서 잔액을 확인합니다
 4. **alice의 잔액이 1,000원 → 500원으로 감소** (공격 성공)
+
+> **참고:** 취약한 버전은 `SameSite=None` 쿠키를 사용하므로 다른 사이트에서도 쿠키가 전송됩니다.
+> Chrome에서 동작하지 않으면 Firefox를 사용하세요 (`SameSite=None` + HTTP는 Firefox에서 더 잘 동작합니다).
 
 ### 공격이 성공하는 이유
 
@@ -108,8 +105,9 @@ docker-compose up -d
 
 1. 브라우저에서 http://localhost:5002 접속
 2. `alice`로 로그인
-3. 위의 `attacker.html`에서 포트를 5002로 변경한 뒤 실행
+3. `attacker.html`의 포트를 5002로 변경한 버전을 만들어서 공격 시도
 4. **400 Bad Request 에러 발생** — CSRF 토큰이 없으므로 요청 거부
+5. 추가로 `SameSite=Strict` 쿠키이므로 다른 사이트에서 쿠키 자체가 전송되지 않음
 
 ### curl로 CSRF 방어 확인
 
@@ -216,13 +214,13 @@ python -m bandit -r secure/ -ll
 #### 취약한 버전 테스트
 1. http://localhost:5001 접속 → `alice`로 로그인
 2. 잔액 1,000원 확인
-3. `attacker.html`을 동일 브라우저에서 열기
-4. 자동 송금 후 잔액 500원으로 감소 확인 (취약점 확인)
+3. **동일 브라우저**에서 http://localhost:9000/attacker.html 접속
+4. "경품 수령하기" 클릭 → 잔액 500원으로 감소 확인 (공격 성공)
 
 #### 안전한 버전 테스트
 1. http://localhost:5002 접속 → `alice`로 로그인
 2. 잔액 1,000원 확인
-3. `attacker.html`(포트 5002로 변경)을 동일 브라우저에서 열기
+3. 공격 페이지에서 포트를 5002로 변경하여 공격 시도
 4. 400 에러 발생 확인 (방어 성공)
 5. 브라우저 개발자 도구(F12) → 네트워크 탭에서 CSRF 토큰이 폼에 포함되어 있는지 확인
 
