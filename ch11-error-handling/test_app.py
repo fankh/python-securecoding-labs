@@ -1,6 +1,6 @@
 """
 Chapter 11: Error Handling Tests
-Run: pytest test_app.py -v
+Run: python -m pytest test_app.py -v
 """
 import pytest
 import sys
@@ -32,6 +32,25 @@ class TestVulnerableApp:
         data = json.loads(resp.data)
         assert 'traceback' in data or 'Traceback' in str(data)
 
+    def test_transfer_no_rollback(self, client):
+        """취약점: 에러 시 rollback 없음 → 잔액 불일치"""
+        # 초기 잔액 확인
+        resp = client.get('/balance')
+        balances = json.loads(resp.data)
+        admin_before = next(b['balance'] for b in balances if b['username'] == 'admin')
+
+        # 송금 중 에러 발생 (receiver="error"로 시뮬레이션)
+        resp = client.post('/transfer', data={
+            "from": "admin", "to": "error", "amount": "300"
+        })
+        assert resp.status_code == 500
+
+        # 잔액 확인: rollback 없으므로 admin 잔액이 차감된 상태
+        resp = client.get('/balance')
+        balances = json.loads(resp.data)
+        admin_after = next(b['balance'] for b in balances if b['username'] == 'admin')
+        assert admin_after == admin_before - 300  # 돈이 사라짐!
+
 
 class TestSecureApp:
     @pytest.fixture
@@ -54,6 +73,39 @@ class TestSecureApp:
         assert resp.status_code == 400
         data = json.loads(resp.data)
         assert 'traceback' not in str(data).lower()
+
+    def test_transfer_rollback(self, client):
+        """보안: 에러 시 rollback → 잔액 보존"""
+        # 초기 잔액 확인
+        resp = client.get('/balance')
+        balances = json.loads(resp.data)
+        admin_before = next(b['balance'] for b in balances if b['username'] == 'admin')
+
+        # 송금 중 에러 발생 (receiver="error"로 시뮬레이션)
+        resp = client.post('/transfer', data={
+            "from": "admin", "to": "error", "amount": "300"
+        })
+        assert resp.status_code == 500
+
+        # 잔액 확인: rollback으로 admin 잔액이 원래대로 유지
+        resp = client.get('/balance')
+        balances = json.loads(resp.data)
+        admin_after = next(b['balance'] for b in balances if b['username'] == 'admin')
+        assert admin_after == admin_before  # 잔액 보존!
+
+    def test_transfer_success(self, client):
+        """정상 송금 테스트"""
+        resp = client.post('/transfer', data={
+            "from": "admin", "to": "alice", "amount": "200"
+        })
+        assert resp.status_code == 200
+
+        resp = client.get('/balance')
+        balances = json.loads(resp.data)
+        admin_balance = next(b['balance'] for b in balances if b['username'] == 'admin')
+        alice_balance = next(b['balance'] for b in balances if b['username'] == 'alice')
+        assert admin_balance == 800
+        assert alice_balance == 1200
 
 
 if __name__ == '__main__':

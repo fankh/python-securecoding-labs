@@ -26,6 +26,7 @@ docker-compose up --build
 | 로그 기록 | 비밀번호, 신용카드 평문 기록 | 민감 정보 자동 마스킹 |
 | 사용자 열거 | "Username does not exist" / "Invalid password" 구분 | 동일한 "Invalid credentials" 메시지 |
 | 디버그 엔드포인트 | `/debug` 에서 환경변수 전체 노출 | 없음 |
+| DB 트랜잭션 | rollback 없음 → 에러 시 데이터 불일치 | rollback으로 데이터 일관성 보장 |
 
 ## 공격 실습 (취약한 버전)
 
@@ -91,17 +92,63 @@ Login attempt: username=admin, password=admin123
 User found: {'credit_card': '4111-1111-1111-1111', ...}
 ```
 
+### 공격 6: 트랜잭션 rollback 없음 → 데이터 불일치
+
+```powershell
+# 초기 잔액 확인 (admin: 1000, alice: 1000)
+curl.exe http://localhost:5001/balance
+
+# 송금 중 에러 발생 (receiver="error"로 시뮬레이션)
+curl.exe -X POST http://localhost:5001/transfer -d "from=admin&to=error&amount=300"
+# 결과: 500 에러
+
+# 잔액 다시 확인
+curl.exe http://localhost:5001/balance
+# 결과: admin: 700, alice: 1000 → 300원이 사라짐!
+```
+
+**원인:** 취약한 코드는 1단계(차감) 후 바로 `commit()`하므로, 2단계(입금)에서 에러가 나면 차감만 반영됩니다:
+
+```python
+# 취약한 코드
+conn.execute("UPDATE accounts SET balance = balance - ? ...", (amount, sender))
+conn.commit()  # ← 여기서 이미 커밋! 이후 에러 시 되돌릴 수 없음
+
+conn.execute("UPDATE accounts SET balance = balance + ? ...", (amount, receiver))
+conn.commit()  # ← 여기서 에러 발생 시 위의 차감만 남음
+```
+
 ## 방어 확인 (안전한 버전)
 
-```bash
+```powershell
 # 동일한 잘못된 입력 → 일반적인 에러 메시지만 반환
 curl.exe "http://localhost:5002/user?id=abc"
-# 결과: {"error": "An unexpected error occurred", "error_id": "a1b2c3d4"}
+# 결과: {"error": "Invalid input provided"}
 
 # 존재/비존재 사용자 → 동일한 메시지
 curl.exe -X POST http://localhost:5002/login -d "username=admin&password=wrong"
 curl.exe -X POST http://localhost:5002/login -d "username=nonexist&password=wrong"
 # 결과: 둘 다 "Invalid credentials" (사용자 열거 불가)
+```
+
+### 안전한 rollback 확인
+
+```powershell
+# 초기 잔액 확인 (admin: 1000, alice: 1000)
+curl.exe http://localhost:5002/balance
+
+# 송금 중 에러 발생
+curl.exe -X POST http://localhost:5002/transfer -d "from=admin&to=error&amount=300"
+# 결과: 500 에러
+
+# 잔액 확인 → rollback으로 잔액 보존
+curl.exe http://localhost:5002/balance
+# 결과: admin: 1000, alice: 1000 → 잔액 변화 없음 (안전!)
+
+# 정상 송금 테스트
+curl.exe -X POST http://localhost:5002/transfer -d "from=admin&to=alice&amount=200"
+curl.exe http://localhost:5002/balance
+# 결과: admin: 800, alice: 1200 (정상)
 ```
 
 ## 방어 기법
@@ -147,6 +194,28 @@ else:      return "Username not found", 401
 return jsonify({"error": "Invalid credentials"}), 401
 ```
 
+### 4. 트랜잭션 rollback (데이터 일관성)
+
+```python
+# 취약: 중간 commit → 에러 시 데이터 불일치
+conn.execute("UPDATE accounts SET balance = balance - ? ...", (amount, sender))
+conn.commit()  # 여기서 커밋 후 아래에서 에러 나면 돈이 사라짐
+conn.execute("UPDATE accounts SET balance = balance + ? ...", (amount, receiver))
+conn.commit()
+
+# 안전: 모든 작업 완료 후 commit, 에러 시 rollback
+conn = get_db()
+try:
+    conn.execute("UPDATE accounts SET balance = balance - ? ...", (amount, sender))
+    conn.execute("UPDATE accounts SET balance = balance + ? ...", (amount, receiver))
+    conn.commit()  # 모두 성공한 경우에만 커밋
+except Exception:
+    conn.rollback()  # 에러 시 모든 변경 취소
+    raise
+finally:
+    conn.close()
+```
+
 ## 테스트 방법
 
 ### 1. pytest 실행 (권장)
@@ -160,28 +229,28 @@ python -m pytest test_app.py -v
 ```
 test_app.py::TestVulnerableApp::test_index PASSED                    [ 14%]
 test_app.py::TestVulnerableApp::test_error_exposes_trace PASSED      [ 28%]
-test_app.py::TestVulnerableApp::test_sensitive_log PASSED            [ 42%]
+test_app.py::TestVulnerableApp::test_transfer_no_rollback PASSED     [ 42%]
 test_app.py::TestSecureApp::test_index PASSED                        [ 57%]
 test_app.py::TestSecureApp::test_error_generic PASSED                [ 71%]
-test_app.py::TestSecureApp::test_error_id_present PASSED             [ 85%]
-test_app.py::TestSecureApp::test_sensitive_masked PASSED             [100%]
+test_app.py::TestSecureApp::test_transfer_rollback PASSED            [ 85%]
+test_app.py::TestSecureApp::test_transfer_success PASSED             [100%]
 
-============================== 7 passed in 0.46s ==============================
+============================== 7 passed in 0.74s ==============================
 ```
 
 **테스트 항목:**
-| 테스트 | 설명 | 결과 |
-|--------|------|------|
-| `test_error_exposes_trace` | 취약: 스택 트레이스 노출 | 취약 버전만 통과 |
-| `test_sensitive_log` | 취약: 민감 정보 로그 기록 | 취약 버전만 통과 |
-| `test_error_generic` | 안전: 일반 에러 메시지만 반환 | 안전 버전만 통과 |
-| `test_error_id_present` | 안전: error_id로 추적 가능 | 안전 버전만 통과 |
-| `test_sensitive_masked` | 안전: 민감 정보 마스킹 확인 | 안전 버전만 통과 |
+| 테스트 | 설명 |
+|--------|------|
+| `test_error_exposes_trace` | 취약: 스택 트레이스 노출 확인 |
+| `test_transfer_no_rollback` | 취약: 에러 시 rollback 없음 → 잔액 불일치 확인 |
+| `test_error_generic` | 안전: 일반 에러 메시지만 반환 확인 |
+| `test_transfer_rollback` | 안전: 에러 시 rollback → 잔액 보존 확인 |
+| `test_transfer_success` | 안전: 정상 송금 시 잔액 정확히 변경 확인 |
 
 **개별 테스트 실행:**
 ```bash
 python -m pytest test_app.py -k "error" -v
-python -m pytest test_app.py -k "log or masked" -v
+python -m pytest test_app.py -k "transfer" -v
 ```
 
 ### 2. 수동 테스트 (브라우저)

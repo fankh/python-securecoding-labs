@@ -77,6 +77,24 @@ def init_db():
             "INSERT INTO users (username, password_hash, email, credit_card_last4) VALUES (?, ?, ?, ?)",
             ("admin", "hashed_password_here", "admin@example.com", "1111")
         )
+        conn.execute(
+            "INSERT INTO users (username, password_hash, email, credit_card_last4) VALUES (?, ?, ?, ?)",
+            ("alice", "hashed_password_here", "alice@example.com", "2222")
+        )
+        conn.commit()
+    except:
+        pass
+    # 잔액 테이블
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS accounts (
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE,
+            balance INTEGER DEFAULT 1000
+        )
+    ''')
+    try:
+        conn.execute("INSERT INTO accounts (username, balance) VALUES (?, ?)", ("admin", 1000))
+        conn.execute("INSERT INTO accounts (username, balance) VALUES (?, ?)", ("alice", 1000))
         conn.commit()
     except:
         pass
@@ -204,6 +222,65 @@ def login():
         "message": "Login successful",
         "user_id": user["id"]
     })
+
+
+@app.route("/balance")
+@handle_errors
+def get_balance():
+    """잔액 조회"""
+    conn = get_db()
+    rows = conn.execute("SELECT username, balance FROM accounts").fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in rows])
+
+
+@app.route("/transfer", methods=["POST"])
+@handle_errors
+def transfer():
+    """안전한 송금: 에러 발생 시 rollback으로 데이터 일관성 보장"""
+    sender = request.form.get("from", "")
+    receiver = request.form.get("to", "")
+    amount = request.form.get("amount", "0")
+
+    if not sender or not receiver:
+        raise ValueError("Missing sender or receiver")
+
+    amount = int(amount)
+    if amount <= 0:
+        raise ValueError("Amount must be positive")
+
+    conn = get_db()
+    try:
+        # 1단계: 보내는 사람 잔액 차감
+        conn.execute(
+            "UPDATE accounts SET balance = balance - ? WHERE username = ?",
+            (amount, sender)
+        )
+
+        # 2단계: 받는 사람 잔액 증가 (여기서 에러 발생 가능)
+        if receiver == "error":
+            raise Exception("DB connection lost")  # 시뮬레이션: 네트워크 에러
+
+        conn.execute(
+            "UPDATE accounts SET balance = balance + ? WHERE username = ?",
+            (amount, receiver)
+        )
+
+        # 모든 단계 성공 후에만 커밋
+        conn.commit()
+        logger.info(f"Transfer success: {sender} → {receiver}: {amount}")
+
+        return jsonify({
+            "status": "success",
+            "message": f"{sender} → {receiver}: {amount}원 송금 완료"
+        })
+    except Exception as e:
+        # 안전: rollback으로 모든 변경 취소
+        conn.rollback()
+        logger.error(f"Transfer failed, rolled back: {type(e).__name__}")
+        raise  # handle_errors 데코레이터에서 처리
+    finally:
+        conn.close()
 
 
 @app.errorhandler(404)
