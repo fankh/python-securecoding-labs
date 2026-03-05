@@ -86,8 +86,8 @@ def generate_sbom(requirements_file, output_file):
             sys.executable, "-m", "cyclonedx_py",
             "requirements",
             requirements_file,
-            "-o", output_file,
-            "--format", "json"
+            "--of", "JSON",
+            "-o", output_file
         ],
         f"SBOM 생성: {output_file}"
     )

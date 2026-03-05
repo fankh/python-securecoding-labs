@@ -111,7 +111,7 @@ docker-compose up --build
 
 ```powershell
 pip install cyclonedx-bom
-cyclonedx-py requirements requirements_secure.txt -o sbom.json --format json
+python -m cyclonedx_py requirements requirements_secure.txt --of JSON -o sbom.json
 ```
 
 ### 7. 해시 검증
