@@ -1,12 +1,9 @@
-# 취약한 의존성 예시 (실습용)
-# 실제 프로젝트에서는 절대 사용하지 마세요!
+# Vulnerable dependencies (for educational purposes only)
+# DO NOT use in production!
 
-flask==1.0.0
-requests==2.20.0
-pyyaml==5.1
-jinja2==2.10
-urllib3==1.24.1
-pillow==6.0.0
-cryptography==2.1.0
-django==2.2.0
-numpy==1.16.0
+flask==2.2.0
+requests==2.25.0
+jinja2==3.1.0
+urllib3==1.26.5
+pillow==9.0.0
+setuptools==65.0.0

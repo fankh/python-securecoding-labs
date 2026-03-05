@@ -1,9 +1,8 @@
-# 안전한 의존성 (버전 고정)
-# Best Practice: 정확한 버전 고정으로 재현 가능한 빌드 보장
-flask==3.0.0
-requests==2.31.0
-pyyaml==6.0.1
-jinja2==3.1.2
-urllib3==2.0.7
-pillow==10.2.0
-cryptography==41.0.7
+# Secure dependencies (pinned versions)
+# Best Practice: exact version pinning for reproducible builds
+flask==3.1.3
+requests==2.32.4
+jinja2==3.1.6
+urllib3==2.6.3
+pillow==12.1.1
+setuptools==78.1.1

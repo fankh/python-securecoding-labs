@@ -66,7 +66,7 @@ def install_security_tools():
 def scan_with_pip_audit(requirements_file):
     """pip-audit으로 취약점 스캔"""
     return run_command(
-        [sys.executable, "-m", "pip_audit", "-r", requirements_file],
+        [sys.executable, "-m", "pip_audit", "--no-deps", "-r", requirements_file],
         f"pip-audit 스캔: {requirements_file}"
     )
 
