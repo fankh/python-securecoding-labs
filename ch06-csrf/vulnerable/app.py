@@ -7,9 +7,12 @@ import sqlite3
 app = Flask(__name__)
 app.json.ensure_ascii = False
 app.secret_key = "secret"
-# 취약점: SameSite=None → 다른 사이트에서 쿠키 전송 가능 (CSRF 허용)
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE'] = False
+# 취약점: SameSite 쿠키 보호 없음
+# SameSite=None + Secure=False는 최신 브라우저에서 차단되므로 주석 처리
+# 주석 처리하면 Flask 기본값(None → 브라우저 기본 Lax)이 적용되지만,
+# localhost에서는 같은 사이트(same-site)이므로 CSRF 공격이 성공합니다.
+# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+# app.config['SESSION_COOKIE_SECURE'] = False
 DB_PATH = "users.db"
 
 

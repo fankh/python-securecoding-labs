@@ -19,8 +19,8 @@ services:
   attacker:
     image: python:3.11-slim
     ports:
-      - "9000:9000"
+      - "8888:8888"
     volumes:
       - ./attacker.html:/app/attacker.html:ro
     working_dir: /app
-    command: python -m http.server 9000
+    command: python -m http.server 8888

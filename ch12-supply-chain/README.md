@@ -48,7 +48,7 @@ python -m pip_audit --no-deps -r requirements_vulnerable.txt
 
 **실제 출력 결과:**
 ```
-Found 35 known vulnerabilities in 7 packages
+Found 33 known vulnerabilities in 7 packages
 Name       Version ID               Fix Versions
 ---------- ------- ---------------- -------------
 flask      2.2.0   PYSEC-2023-62    2.2.5,2.3.2
@@ -63,9 +63,11 @@ jinja2     3.1.0   CVE-2024-34064   3.1.4
 jinja2     3.1.0   CVE-2024-56326   3.1.5
 jinja2     3.1.0   CVE-2024-56201   3.1.5
 jinja2     3.1.0   CVE-2025-27516   3.1.6
-pillow     9.0.0   PYSEC-2022-168   9.0.1
-pillow     9.0.0   CVE-2023-50447   10.2.0
-pillow     9.0.0   CVE-2024-28219   10.3.0
+pillow     9.5.0   PYSEC-2023-175   10.0.1
+pillow     9.5.0   PYSEC-2023-227   10.0.0
+pillow     9.5.0   CVE-2023-50447   10.2.0
+pillow     9.5.0   CVE-2023-4863    10.0.1
+pillow     9.5.0   CVE-2024-28219   10.3.0
 setuptools 65.0.0  CVE-2024-6345    70.0.0
 ...
 ```
@@ -89,7 +91,7 @@ No known vulnerabilities found
 | requests | 2.25.0 | 4 | 2.32.4 |
 | jinja2 | 3.1.0 | 5 | 3.1.6 |
 | urllib3 | 1.26.5 | 9 | 2.6.3 |
-| pillow | 9.0.0 | 8 | 12.1.1 |
+| pillow | 9.5.0 | 5 | 12.1.1 |
 | setuptools | 65.0.0 | 5 | 78.1.1 |
 
 **핵심 차이:**
@@ -118,6 +120,58 @@ python -m cyclonedx_py requirements requirements_secure.txt --of JSON -o sbom.js
 
 ```powershell
 python check_hashes.py
+pip install --require-hashes -r requirements_locked.txt
+```
+
+> **주의:** `--require-hashes` 모드에서는 **모든 하위 의존성의 해시도 필요**합니다.
+> `requirements_locked.txt`에 flask의 하위 의존성(Werkzeug, MarkupSafe, itsdangerous,
+> click, blinker)을 모두 포함했습니다. 하위 의존성이 누락되면 설치가 실패합니다.
+
+## 알려진 이슈 및 해결 방법
+
+### 이슈 1: Pillow 9.0.0 빌드 오류 (Python 3.12+)
+
+**증상:**
+```
+KeyError: '__version__'
+```
+
+**원인:** Pillow 9.0.0은 Python 3.12+ 환경에서 빌드할 수 없습니다 (내부 `__version__` 참조 방식 변경).
+
+**해결:** `requirements_vulnerable.txt`에서 Pillow를 9.5.0으로 업데이트했습니다. 9.5.0도 다수의 CVE가 존재하므로 실습 목적은 동일합니다.
+
+> **Python 버전 주의:** `pip-audit --no-deps`는 내부적으로 패키지 빌드를 시도할 수 있습니다.
+> Pillow 9.5.0은 **Python 3.12 이하**에서만 빌드 가능합니다.
+> Python 3.13+에서는 Docker 컨테이너(Python 3.11)로 실행하세요:
+> ```powershell
+> docker run --rm -v ${PWD}:/app -w /app python:3.11-slim bash -c "pip install pip-audit -q && python -m pip_audit --no-deps -r requirements_vulnerable.txt"
+> ```
+
+```
+# 변경 전 (빌드 오류 발생)
+pillow==9.0.0
+
+# 변경 후 (정상 동작)
+pillow==9.5.0
+```
+
+> **참고:** `pip-audit --no-deps` 모드는 실제 설치 없이 스캔하므로 빌드 오류가 발생하지 않습니다. 이 이슈는 `pip install -r requirements_vulnerable.txt`로 직접 설치할 때만 발생합니다.
+
+### 이슈 2: --require-hashes 하위 의존성 해시 누락
+
+**증상:**
+```
+ERROR: In --require-hashes mode, all requirements must have their versions pinned with ==
+and hashes specified. Werkzeug from ... does not have a hash.
+```
+
+**원인:** `--require-hashes` 모드는 **직접 의존성뿐 아니라 모든 하위 의존성**의 해시도 요구합니다.
+
+**해결:** `requirements_locked.txt`에 flask의 모든 하위 의존성과 해시를 포함했습니다:
+- flask → werkzeug, markupsafe, itsdangerous, click, blinker, jinja2
+
+```powershell
+# 정상 동작하는 해시 검증 실습
 pip install --require-hashes -r requirements_locked.txt
 ```
 
@@ -261,7 +315,7 @@ python -m pytest test_tools.py -k "syntax" -v
 
 1. `requirements_vulnerable.txt` - 알려진 CVE가 있는 구버전
 2. `requirements_secure.txt` - CVE가 수정된 최신 버전 고정
-3. `pip-audit` 결과 비교 (35 vulnerabilities vs 0)
+3. `pip-audit` 결과 비교 (33 vulnerabilities vs 0~1)
 
 ## 참고 자료
 - [OWASP Dependency-Check](https://owasp.org/www-project-dependency-check/)
